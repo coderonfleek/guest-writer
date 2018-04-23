@@ -16,16 +16,20 @@ related:
 also provide the link to a GitHub repository that contains code related to this article.
 
 ## Prerequisites
+
 Building Vr experiences in the web starts with building great WebGL (Web Graphics Layer) content. WebGL is a browser API that allows us to design 3D graphics on the Web.
 WebGL in itself is a very complex API to use, luckily libraries like ThreeJS are available to help us build 3D content fast and easy thus basic knowledge of the Threejs library is also required to follow up with this article.
 
 ## What we would be building
+
 We will be building an application which allows a user to login with their Google account and then be taken into a 3D world where the user sees their name floating in space.
 
-
 ## Setting Up Google Authentication
+
 To authenticate with Google we are going to be using Auth0 Lock, an embeddable login form for desktop, tablet and mobile devices.
+
 ### Setup Google Social Login on Auth0 Account
+
 To use Auth0 Lock, we first need to setup an application on our Auth0 account for this project and enable that client to use Google authentication.
 Log into your Auth0 dashboard and go to Applications, then create a new application by clicking the big orange **+Create Application** button.
 Create a new application by entering the name and selecting **Regular Web Applications**, then click the 'Create' button.
@@ -35,8 +39,9 @@ Now click on the Applications tab on the same dialog and enable your app to use 
 Close out of the dialog and turn on the toggle button on the Google tab.
 
 ### Google Login with Auth0 Lock
+
 Create `index.html`, this is the file/page that will be loaded when our application starts up.
-To begin using Lock, you first need to include the Auth0 Lock script, we would be adding the script from a CDN 
+To begin using Lock, you first need to include the Auth0 Lock script, we would be adding the script from a CDN
 
 ```markup
 <script src="https://cdn.auth0.com/js/lock/11.5.2/lock.min.js"></script>
@@ -45,47 +50,42 @@ To begin using Lock, you first need to include the Auth0 Lock script, we would b
 Then setup Lock with your Auth0 Application client name and client Id thus:
 
 ```javascript
-var lock = new Auth0Lock(
-            "CLIENT_ID",
-            "CLIENT_DOMAIN",
-            {
-                allowedConnections: ["google-oauth2"],
-                rememberLastLogin: false,
-                socialButtonStyle: "big",
-                languageDictionary: { "title": "WebVR Demo" },
-                language: "en",
-                theme: {},
-                closable: false,
-                auth: {
-                    redirect: false
-                }
-            }
-        );
+var lock = new Auth0Lock("CLIENT_ID", "CLIENT_DOMAIN", {
+  allowedConnections: ["google-oauth2"],
+  rememberLastLogin: false,
+  socialButtonStyle: "big",
+  languageDictionary: { title: "WebVR Demo" },
+  language: "en",
+  theme: {},
+  closable: false,
+  auth: {
+    redirect: false
+  }
+});
 
-        lock.on("authenticated", function (authResult) {
-            lock.getUserInfo(authResult.accessToken, function (error, profile) {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
+lock.on("authenticated", function(authResult) {
+  lock.getUserInfo(authResult.accessToken, function(error, profile) {
+    if (error) {
+      console.log(error);
+      return;
+    }
 
-                localStorage.setItem("accessToken", authResult.accessToken);
-                localStorage.setItem("profile", JSON.stringify(profile));
+    localStorage.setItem("accessToken", authResult.accessToken);
+    localStorage.setItem("profile", JSON.stringify(profile));
 
-                //Go to VR Page
-                window.location.replace('stage.html');
-            });
-        });
+    //Go to VR Page
+    window.location.replace("stage.html");
+  });
+});
 
+lock.on("authorization_error", function(error) {
+  console.log("authorization_error", error);
+});
 
-        lock.on('authorization_error', function (error) {
-            console.log('authorization_error', error);
-        });
-
-        lock.show();
-
+lock.show();
 ```
-In the code above, we first setup Auth0 Lock using our Application's client Id and domain and instruct it to use the Google login by entering  `google-oauth2` into the `allowedConnections` array.
+
+In the code above, we first setup Auth0 Lock using our Application's client Id and domain and instruct it to use the Google login by entering `google-oauth2` into the `allowedConnections` array.
 
 We then setup a listener on the `authenticated` event. This event is then handled by calling the Lock's `getUserInfo` function and passing the access token returned from the authenctication results.
 The callback to this function will save the access token and user profile in the browser's local storage to access later.
@@ -95,21 +95,211 @@ We then immediately redirect to our would-be virtual reality scene page which we
 Also, we add an event handler to take care of the `authorization_error` error event.
 
 Lastly, we call Lock's `show` method to instantly display Auth0's login box when the page loads.
+
 ## Building the Scene
 
+Now to the main action. We are going to be building a 3D scene using a Skybox, add the user's name from the saved profile and make it rotate in space right before the user's eyes.
+We will make this viewable using a Head Mounted Device like Google Cardboard.
+Create another `html` file and name it `stage.html`.
+
 ### Getting the Required Libraries
+
+To begin we first need to get the required libraries to build our scene and use the WebVr API
+First, we get the following libraries:
+
+1.  [ES6 Promise Polyfill](https://github.com/stefanpenner/es6-promise)
+2.  [ThreeJS Core Library](https://github.com/mrdoob/three.js/)
+3.  [WebVr Polyfill](https://github.com/immersive-web/webvr-polyfill)
+4.  [Google WebVr UI](https://github.com/googlevr/webvr-ui)
+
+These are the base libraries we will be using, we will still be adding some more but here is where we start off. You can have direct access to all these scripts from the `js` folder of the [project repo](https://github.com/coderonfleek/webvr/tree/master/auth0-floating-name)
+
 ### Setting Up the 3D Scene
 
+Lets begin by setting up some variables
+
+```javascript
+// Last time the scene was rendered.
+var lastRenderTime = 0;
+// Currently active VRDisplay.
+var vrDisplay;
+// Various global THREE.Objects.
+var renderer;
+var scene;
+var cube;
+var textMesh;
+var controls;
+var effect;
+var camera;
+// EnterVRButton for rendering enter/exit UI.
+var vrButton;
+
+//User Profile
+var profile = JSON.parse(localStorage.getItem("profile"));
+```
+
+Next step, we create a function that will run immediately our window loads, inside this function we setup our entire scene and all reuired objects
+
+```javascript
+function onLoad() {
+  //Setup Scene
+}
+
+window.addEventListerner("load", onLoad);
+```
+
 #### Scene
+
+Inside the `onLoad` function, we create a Threejs scene into which we will be adding all our elements.
+
+```javascript
+// Create a three.js scene.
+scene = new THREE.Scene();
+```
+
 #### Camera
+
+Now, lets add a camera to our scene. Just below the code above we setup our camera
+
+```javascript
+var aspect = window.innerWidth / window.innerHeight;
+camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 10000);
+```
+
 #### Skybox
+
+To create our 3D scene,we are going to be setting up a Skybox. A Skybox is a large cube with images of our 3D scene on the sides of the cube. The camera is then place within the skybox creating an illusion of a 3D world surrounding the user.
+
+In this project, we are going to be creating a dessert scene. Thus, we need dessert pictures that fit on a cube. A great place to get images for skyboxes is at [Custom Map Makers](http://www.custommapmakers.org/skyboxes.php).
+The images used in this project are available [here](https://github.com/coderonfleek/webvr/tree/master/auth0-floating-name/img/ame_desert).
+
+```javascript
+//Add Skybox
+var desertGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
+var desertMaterials = [
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_front.png"),
+    side: THREE.DoubleSide
+  }),
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_back.png"),
+    side: THREE.DoubleSide
+  }),
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_up.png"),
+    side: THREE.DoubleSide
+  }),
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_down.png"),
+    side: THREE.DoubleSide
+  }),
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_right.png"),
+    side: THREE.DoubleSide
+  }),
+  new THREE.MeshBasicMaterial({
+    map: new THREE.TextureLoader().load("img/ame_desert/desertsky_left.png"),
+    side: THREE.DoubleSide
+  })
+];
+
+var desertMaterial = new THREE.MultiMaterial(desertMaterials);
+
+var desert = new THREE.Mesh(desertGeometry, desertMaterial);
+
+scene.add(desert);
+```
+
+In the code above, we first create our giant cube. Then, we create an array of materials to be added on each side of the cube, each material mapped to the image to be at a specific side of the cube.
+We then create our cube mesh and add it to the scene.
+
 #### Light
+
+For this scene, the ambient light is good enough for what we hope to achieve, so lets go ahead and add that.
+
+```javascript
+var ambientLight = new THREE.AmbientLight(0xffffff);
+scene.add(ambientLight);
+```
+
 #### Rendering
+
+Now lets render our scene. To render the scene we will be creating a Threejs WebGL Renderer and using the Threejs VREffects library to render it.
+Ensure to add the Threejs VREffects library like this
+
+```markup
+<!--
+  VREffect.js handles stereo camera setup and rendering.
+-->
+<script src="js/VREffect.js"></script>
+```
+
+Then setup the renderer.
+
+```javascript
+renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+
+// Append the canvas element created by the renderer to document body element.
+document.body.appendChild(renderer.domElement);
+
+// Apply VR stereo rendering to renderer.
+effect = new THREE.VREffect(renderer);
+effect.setSize(window.innerWidth, window.innerHeight);
+```
+
+Lets write a function to render ur scene and call this function in our `onLoad` function
+
+```javascript
+function onLoad() {
+  //----Previous logic above---
+
+  render();
+}
+
+function render() {
+  // Render the scene.
+  effect.render(scene, camera);
+
+  //vrDisplay.requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
+}
+```
+
+Serve up `stage.html` in your broswer and you will see our scene as displayed below.
+
+#### Controls
+
+Controls allow us to move around our seen. In virtual reality, it helps the user look around the scene by moving their heads just as they do in real life.
+We are going to be setting up controls by adding the Threejs VRControls library and adding it to our scene.
+
+```markup
+<!--
+  VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
+-->
+<script src="js/VRControls.js"></script>
+```
+
+Now, we setup our controls and tweak the camera position a little bit so that it recognizes the user's eye level
+
+```javascript
+controls = new THREE.VRControls(camera);
+
+//*Set standing to 'true' to indicate that the user is standing
+controls.standing = true;
+//*Set the camera vertical position to the eye level of user
+camera.position.y = controls.userHeight;
+```
 
 ### Floating the user's name in space
 
 #### Add name Text Object
+
 #### Animate the name
+
+### Setting up the WebVR Polyfill and WebVR UI
+
+### Handling window resize
 
 ## Testing the Project
 
