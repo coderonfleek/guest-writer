@@ -9,16 +9,48 @@ author:
   mail: "fik4christ@yahoo.com"
   avatar: "https://twitter.com/coderonfleek/profile_image?size=original"
 related:
-- 2017-11-15-an-example-of-all-possible-elements
+  - 2017-11-15-an-example-of-all-possible-elements
 ---
 
-**TL;DR:** Briefly describe what this article is about and what the reader will achieve/learn after reading it. Please,
-also provide the link to a GitHub repository that contains code related to this article.
+**TL;DR:** As [Single Page Applications](https://en.wikipedia.org/wiki/Single-page_application) are fast becoming the defacto way of developing Frontend applications, one of the major issues faced implementing them is how we manage state between all the components spread around our application. Vuejs Apps are not an exception to this. However, a few neat flux libraries like [Redux](https://redux.js.org/) have risen to solve this problem. The Vuejs team has also jumped on the flux train and come up with [Vuex](https://vuex.vuejs.org/) which is a state management pattern + library for Vue.js applications. In this article, we are going to be learning how to manage state in Vuejs applications using Vuex by building a simple application with Vue and Vuex.
 
-## The Second Most Important Title
+## Prerequisites
 
-Usually, we start describing again what this article is about. The difference, however, is that here we can explain with
-more words. Another important thing that we should include in this first paragraph are the name of the main technologies
-that we will talk about, and add a link to them. For example, we could say that we are going to use
-[React](https://reactjs.org/) and [Redux](https://redux.js.org/) to develop a simple
-[SPA (Single Page Application)](https://en.wikipedia.org/wiki/Single-page_application).
+Before you begin going through this article, there are a few things you should already be familiar with, at least at a basic level.
+
+1. [Nodejs](https://nodejs.org) and NPM Installed on your computer
+2. Javascript ES6 (ES2015)
+3. [Vuejs](https://vuejs.org/)
+
+## Introducing Vuex
+
+Vuex is a state management pattern and library for Vuejs applications built on the concept of unidirectional data flow which is the [Flux](https://facebook.github.io/flux/docs/overview.html) pattern of managing state. It helps build and manage a centralized store which holds the entire state of the application, thus, any component connected to this store gets updated as the state gets updated. Vuex also ensures that the state of the application is mutated in a predictable fashion making it easier to track changes and debug issues.
+
+### Vuex Concepts
+
+![Vuex Architecture](https://vuex.vuejs.org/vuex.png)
+
+The concept Vuex works with is to have components or server responses from a Backend API raise events (Actions). These actions then cause the state (contained in the central store) to be mutated through a defined set of rules (Mutations), the resultant change in state is then reflected in any component connected to the Vuex store.
+### Vuex Store
+
+### Vuex Mutations
+
+### Vuex Actions
+
+### Using Vuex Getters
+
+## Vue and Vuex in Action
+
+### What we would be building
+
+### Creating a new Vue App
+
+### Installing Dependencies
+
+### Setting up the Vuex Store
+
+### Creating the store-connected Components
+
+### Running the Application
+
+## Conclusion
