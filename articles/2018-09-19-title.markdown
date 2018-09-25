@@ -12,7 +12,7 @@ related:
   - 2017-11-15-an-example-of-all-possible-elements
 ---
 
-**TL;DR:** As [Single Page Applications](https://en.wikipedia.org/wiki/Single-page_application) are fast becoming the defacto way of developing Frontend applications, one of the major issues faced implementing them is how we manage state between all the components spread around our application. Vuejs Apps are not an exception to this. However, a few neat flux libraries like [Redux](https://redux.js.org/) have risen to solve this problem. The Vuejs team has also jumped on the flux train and come up with [Vuex](https://vuex.vuejs.org/) which is a state management pattern + library for Vue.js applications. In this article, we are going to be learning how to manage state in Vuejs applications using Vuex by building a simple application with Vue and Vuex.
+**TL;DR:** As [Single Page Applications](https://en.wikipedia.org/wiki/Single-page_application) (SPA) are fast becoming the de facto way of developing Frontend applications, one of the major issues faced implementing an SPA is how we manage state between all the components spread around our application. Vuejs Apps are not an exception to this. However, a few neat flux libraries like [Redux](https://redux.js.org/) have risen to solve this problem. The Vuejs team has also jumped on the flux train and come up with [Vuex](https://vuex.vuejs.org/) which is a state management pattern + library for Vue.js applications. In this article, we are going to be learning how to manage state in Vuejs applications using Vuex by building a simple application with Vue and Vuex.
 
 ## Prerequisites
 
@@ -152,7 +152,7 @@ After a successfull installation, simply navigate to the directory in which you 
 
 `vue create bitcoin-dashboard`
 
-This will create our new project. Enter into the project root by running `cd bitcoin-dashboard` then run the following command to serve your Vuejs application in the browser
+This will prompt you to select a preset, select the `default` by hitting `Enter`. This will then create our new project. Enter into the project root by running `cd bitcoin-dashboard` then run the following command to serve your Vuejs application in the browser.
 
 `npm run serve`
 
@@ -161,11 +161,414 @@ You can always shutdown the server by running `Ctrl + C`.
 ### Installing Dependencies
 
 For our project, we are going to be installing three (3) dependencies which are [Bootstrap](https://getbootstrap.com), Vuex and [Font Awesome](https://fontawesome.com/) (the free version) as a development dependency.
+To install these, run the following commands below:
+
+`npm install bootstrap vuex --save`
+
+`npm install @fortawesome/fontawesome-free --save-dev`
 
 ### Setting up the Vuex Store
 
+To begin setting our store, create a folder named `store` inside your `src` folder, this folder will contain all files related our store.
+We first need a set of fake prices to begin with, this is not really necessary but we want to be able to see some prices as we load the application, other prices will then be generated dynamically. So create a file named `prices.js` and add the code below:
+
+```javascript
+const prices = [
+  {
+    amount: 7322.89,
+    timestamp: 1536750195889
+  },
+  {
+    amount: 6322.02,
+    timestamp: 1536750173761
+  },
+  {
+    amount: 5222.64,
+    timestamp: 1536750028203
+  },
+  {
+    amount: 5242.61,
+    timestamp: 1536750028150
+  }
+];
+
+export default prices;
+```
+
+In the file above we export and array of bitcoin prices history and the time each prize was set.
+
+Next thing is to create a file where we store our Vuex actions for the application. Create a file named `actions.js` and add the following code:
+
+```javascript
+const actions = {
+  UPDATE_PRICE: "UPDATE_PRICE"
+};
+
+export default actions;
+```
+
+This file only contains one action because that is the only action we need in our application. Having our actions in a separate file this way helps organize our code better and prevents duplicating string names across our application.
+
+Now we can create our store, create a file named `index.js` to hold our store. Add the following code into the file:
+
+```javascript
+import Vue from "vue";
+import Vuex from "vuex";
+import prices from "./prices";
+
+//Configure Vuex for modules
+Vue.use(Vuex);
+
+const store = new Vuex.Store({
+  state: {
+    prices: prices
+  },
+  getters: {
+    currentPrice: state => {
+      return state.prices[0];
+    },
+    previousPrice: state => {
+      return state.prices[1];
+    },
+    percentageIncrease: (state, getters) => {
+      const currentAmount = getters.currentPrice.amount;
+      const previousAmount = getters.previousPrice.amount;
+      return (
+        ((currentAmount - previousAmount) / previousAmount) *
+        100
+      ).toFixed(2);
+    },
+    difference: (state, getters) => {
+      const currentAmount = getters.currentPrice.amount;
+      const previousAmount = getters.previousPrice.amount;
+      return (currentAmount - previousAmount).toFixed(2);
+    }
+  },
+  mutations: {
+    UPDATE_PRICE(state, payload) {
+      let newPricing = payload;
+
+      // remove the oldest price
+      state.prices.pop();
+
+      // add the new price
+      state.prices = [newPricing, ...state.prices];
+    }
+  }
+});
+
+export default store;
+export { default as actions } from "./actions";
+```
+
+There is a lot going on in this file, so let's drill into it gradually. First we import all modules required. Then we configure Vue to use Vuex for modules with the line:
+
+```javascript
+Vue.use(Vuex);
+```
+
+We then instantiate a new Vuex store with the configuration object where all our settings are declared.
+In the configuration object, we first set our `state` object with the prices data.
+
+```javascript
+state: {
+  prices: prices;
+}
+```
+
+Then we create a set of `getters` to compute and return the current bitcoin price (`currentPrice`), previous bitcoin price (`previousPrice`), percentage difference between the current price and previous price (`percentageIncrease`) and the difference between the current and previous price (`difference`).
+
+Next we create our `mutations`. In this application we only need one mutation which would update the price of bitcoin.
+
+```javascript
+  mutations: {
+    UPDATE_PRICE(state, payload) {
+      let newPricing = payload;
+
+      // remove the oldest price
+      state.prices.pop();
+
+      // add the new price
+      state.prices = [newPricing, ...state.prices];
+    }
+  }
+```
+
+The `UPDATE_PRICE` mutation receives the new price data in its payload, removes the oldest price from the prices array and inserts a new one at the beginning of the array.
+
+That's it! Our store is fully complete. All we need to do now is to export our `store` and also export our `actions` which is done with the following lines:
+
+```javascript
+export default store;
+export { default as actions } from "./actions";
+```
+
 ### Creating the store-connected Components
+
+Now that our store is all set and ready to go, let's create our application components that will connect to our store for updates.
+
+#### CoinPrice Component
+
+This is the component that will display the current Bitcoin price and the difference between the previous and current price.
+
+![CoinPrice component](images/coinprice.png)
+
+Go into the `src/components` folder and delete the default `HelloWorld.vue` that comes with the scaffolded project, then create a file name `CoinPrice.vue` and add the following code:
+
+```markup
+<template>
+  <div id="counter" class="bg-success text-white">
+    <div class="row p-3">
+      <div class="col-2">
+        <i class="fas fa-dollar-sign fa-4x"></i>
+      </div>
+      <div class="col-10 text-right">
+        <h2>{{format(price.amount)}}</h2>
+        ${{difference}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: "CoinPrice",
+    computed: {
+      price() {
+        return this.$store.getters.currentPrice;
+      },
+      difference() {
+        return this.$store.getters.difference;
+      }
+    },
+    methods: {
+      format: price => {
+        return price.toFixed(2);
+      }
+    }
+  };
+</script>
+```
+
+In the code above we create the `CoinPrice` Vue component with two computed properties to helpus retrieve state from our store. We also ad a `format` method to return a cleaner price for display in our component template.
+
+#### PercentChange Component
+
+This is the component that will display the percentage difference betweeen the current and previous Bitcoin prices and also display the time the last update was made.
+
+![PercentageChange Component](images/percentchange.png)
+
+Create a new file, still inside your components directory, and name it `PercentChange.vue`. Now enter the following code into the file:
+
+```markup
+<template>
+  <div id="counter" class="bg-primary text-white">
+    <div class="row p-3">
+      <div class="col-2"><i class="fas fa-percent fa-4x"></i></div>
+      <div class="col-10 text-right">
+        <h2>
+          {{percentageIncrease}}<small>%</small>
+        </h2>
+        {{formatTimestamp(currentPrice.timestamp)}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: "PercentChange",
+    computed: {
+      percentageIncrease() {
+        return this.$store.getters.percentageIncrease;
+      },
+      currentPrice() {
+        return this.$store.getters.currentPrice;
+      }
+    },
+    methods: {
+      formatTimestamp: timestamp => {
+        const currentDate = new Date(timestamp);
+        return currentDate.toString().substring(16, 24);
+      }
+    }
+  };
+</script>
+```
+
+Here, we have two computed properties to return the current Bitcoin price and percentage increase from the store. We also include a method to format the timestamp of each Bitcoin price update for display within our template.
+
+#### PriceItem Component
+
+This component displays a Bitcoin price update and the time the update was recorded
+
+![PriceItem Component](images/priceitem.png)
+
+Still in the components folder, create a file named `PriceItem.vue` and enter the code below:
+
+```markup
+<template>
+  <li class="list-group-item">
+    <div class="row">
+      <div class="col-8">${{formatPrice(price.amount)}}</div>
+      <div class="col-4 text-right">{{formatTimestamp(price.timestamp)}}</div>
+    </div>
+  </li>
+</template>
+
+
+<script>
+  export default {
+    name: "PriceItem",
+    props: {
+      price: Object
+    },
+    methods: {
+      formatTimestamp: timestamp => {
+        const date = new Date(timestamp);
+        return date.toString().substring(16, 24);
+      },
+      formatPrice: amount => {
+        return amount.toFixed(2);
+      }
+    },
+  };
+</script>
+```
+
+In this component, we create a `props` with a `price` property object as this component will require a price object to be passed to it for display within it. We also create two methods to help format the price and time for display.
+
+Great, now we have all the components required for this application. The next thing to do is put everything together under one Vuejs app.
+
+#### The Vue App
+
+Inside the `src` folder, open up the `App.vue` file and enter the following code:
+
+```javascript
+<template>
+  <div id="app" class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1>Dashboard</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6">
+        <CoinPrice/>
+      </div>
+      <div class="col-sm-6">
+        <PercentChange/>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <div class="card">
+          <div class="card-header">
+            Bitcoin Pricing History
+          </div>
+          <ul class="list-group list-group-flush">
+            <PriceItem v-bind:key="price.timestamp" v-for="price in prices" v-bind:price="price"/>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  //Components
+  import CoinPrice from "./components/CoinPrice.vue";
+  import PercentChange from "./components/PercentChange.vue";
+  import PriceItem from "./components/PriceItem.vue";
+
+  //Store
+  import store from "./store";
+  import {actions} from "./store";
+
+  export default {
+    name: "app",
+    components: {
+      CoinPrice,
+      PercentChange,
+      PriceItem
+    },
+    store,
+    computed: {
+      prices() {
+        return store.state.prices;
+      }
+    },
+    created: function () {
+      setInterval(this.triggerNewPrice, 3000);
+    },
+    methods: {
+      triggerNewPrice: () => {
+        const diff = (Math.random() - Math.random()) * 10;
+        const randomNewPrice = store.getters.currentPrice.amount + diff;
+        store.commit(actions.UPDATE_PRICE, {
+          amount: randomNewPrice,
+          timestamp: Date.now()
+        });
+      }
+    }
+  };
+</script>
+
+<style>
+  @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+  @import "../node_modules/@fortawesome/fontawesome-free/css/all.min.css";
+
+  #app {
+    font-family: "Avenir", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #2c3e50;
+    margin-top: 60px;
+  }
+</style>
+```
+
+In our `<template>` we create the Bitcoin dashboard where we make use of our components, looping over the `PriceItem` component to show a history of Bitcoin price updates.
+
+In our `<script>` section, we first import all our components. Then we import our `store` and `actions`, we then create our `App` component by importing the components used in our app;
+
+```javascript
+components: {
+  CoinPrice,
+  PercentChange,
+  PriceItem
+},
+```
+
+then we import our store;
+
+```javascript
+...
+store,
+...
+```
+
+importing our store this way makes it automatically available to all child components of our `App` component.
+
+We the create a computed property `prices` to return prices from our state.
+
+Next we hook into one of the lifecycle hooks of Vuejs components `created`. This function runs after an instance of the component is created. Inside this function we run one of the methods of our component `triggerNewPrice` every three (3) seconds.
+
+The `triggerNewPrice` method is declared inside our `methods` object. The method simply generates a random new price and calls the store's `commit` method with the action to mutate the state and the new random price as the payload, resulting in a new price being added to the state's `prices` array.
+
+In the `<style>` section we simply import `bootstrap` and `fontawesome` css files for use in our application and also add a few styles for aesthetics.
+
+Great! We are done with our application. Now for the moment of truth. Running it.
 
 ### Running the Application
 
+To run the application, simply run
+
+`npm run serve`
+
+Open up your browser to load the provided url. You should see the app running successfully and the prices updating on the prices history and across components every three (3) seconds. The percentage difference and price difference also updates.
+
 ## Conclusion
+
+Just like Vue, Vuex offers a very clean, easy to use and declarative API for managing state in our applications. Its simplicity does not take anything away effectiveness in managing state in our applications regardless of how complex the application is.
+
