@@ -35,91 +35,207 @@ The concept Vuex works with is to have components or server responses from a Bac
 ### Vuex Store
 
 The Vuex store is responsible for holding and managing our application state. It defines the state of the application and methods of mutating and retreiving state. The state is a single object which contains all our application level state and is the single source of truth in our application.
+To create a new Vuex store, we need to call the `Store` constructor of the Vuex module and pass in our store configuration object.
 
 ```javascript
-// Make sure to call Vue.use(Vuex) first if using a module system
+const store = new Vuex.Store({
+  ....
+})
+```
 
+Our store configuration object will hold definitions for our application state, mutations, actions and other store properties for managing and retrieving the application state.
+
+Let's assume we have a list of students in our application. We want to be able to display the students list, add a new student to the list and remove a student when they leave the hypothetical program. We can simply represent our student's list in our application state thus:
+
+```javascript
 const store = new Vuex.Store({
   state: {
-    count: 0
-  },
-  mutations: {
-    increment(state) {
-      state.count++;
-    }
+    students: [
+      {
+        id: 1,
+        name: "Fikayo Adepoju"
+      },
+      {
+        id: 2,
+        name: "Elon Musk"
+      },
+      {
+        id: 3,
+        name: "Serena Williams"
+      }
+    ]
   }
 });
+
+export default store;
+```
+
+Lets call the file above `store.js`
+
+To retrieve application state from our store for use in our components, we can simply import our store into our component. Because Vuex stores are reactive, the way we retrieve state from the store is by returning some part of our store state from computed properties of our component
+
+```javascript
+import store from "./store";
+
+const StudentList = {
+  template: `
+  <ul>
+    <li v-for="student in students">{{student.name}}</li>
+  </ul>
+  `,
+  computed: {
+    students() {
+      return store.state.students;
+    }
+  }
+};
+```
+
+In a multi-component Vue application (which is most of the time the case), Vuex offers a way for us to inject our store into a parent component and through this all its child components automatically have the store injected into them. With this, we don't have to import the store into every component file that requires it.
+
+To set this up, we first need to configure Vue to "use" Vuex. We can simply do this in our store file thus:
+
+```javascript
+import Vue from "vue";
+import Vuex from "vuex";
+
+//Configure Vuex for modules
+Vue.use(Vuex);
+
+const store = new Vuex.Store({
+  ....
+})
+```
+
+With this setup, we can simply import our store into a root component thus:
+
+```javascript
+import store from "./store";
+
+export default {
+  name: "app",
+  store,
+  components: {
+    StudentList,
+    StudentProfile,
+    ....
+  },
+  .....
+}
+```
+
+In the above, the child components (StudentList, StudentProfile etc. in this case) simply inherit the store from the root "app" component, they can then access the store from the `$store` object (not `store` as previously used in the `StudentList` component), while the root component uses the `store` object
+
+```javascript
+import store from "./store";
+
+const StudentList = {
+  ......
+  ,
+  computed: {
+    students () {
+      return this.$store.state.students
+    }
+  }
+}
 ```
 
 ### Vuex Mutations
 
-[Mutations](https://vuex.vuejs.org/guide/mutations.html) serve as the only way to change state in a Vuex store. They operate similar to events and event handlers. They have a name which represents the event, and a function which is the handler for the event. The handler receives the current state as its first argument and performs change operations on it.
-Mutations can also receive a second argument which contains a payload of data needed in making state changes.
+[Mutations](https://vuex.vuejs.org/guide/mutations.html) serve as the only way to change state in a Vuex store. They operate similar to events and event handlers. They have a name which is known as the `type` of the mutation sort of like an event name, and a function which is the handler for the mutation type. The handler receives the current state as its first argument and performs change operations on it.
+
+Mutations can also receive a second (optional) argument which contains a payload of data needed in making state changes.
+
+Mutations are defined in an object assigned to the `mutations` property of the Vuex store configuration object.
+
+Let's assume we want to update our students list by adding a new student to the list, we can simply define an `ADD_STUDENT` mutation type and write an handler for it thus:
 
 ```javascript
 const store = new Vuex.Store({
   ....
   mutations: {
-    increment (state) {
-      // mutate state
-      state.count++
+    ADD_STUDENT (state, new_student_data) {
+      // add new student
+      state.students.push(new_student_data);
     }
   }
 })
 ```
 
-### Vuex Actions
-
-[Actions](https://vuex.vuejs.org/guide/actions.html) are similar to mutations except instead of mutating state, they commit mutations. Actions can also perform asynchronous operations which can then be preceded by commiting a state mutation.
+In Vuex, you can't call mutation handlers directly. Just like event handlers, mutations need to be triggered for their handlers to run, this "triggering" is done by calling `store.commit` with the respective mutation type
 
 ```javascript
-const store = new Vuex.Store({
-  state: {
-    count: 0
-  },
-  mutations: {
-    increment(state) {
-      state.count++;
-    }
-  },
-  actions: {
-    increment(context) {
-      context.commit("increment");
-    }
+.....
+
+methods : {
+  add_new_student: () => {
+    store.commit("ADD_STUDENT", student_data);
   }
-});
+}
+.....
 ```
+
+This will call the mutation handler for the `ADD_STUDENT` mutation type with `student_data` as the payload.
+
+### Vuex Actions
+
+[Actions](https://vuex.vuejs.org/guide/actions.html) are very similiar to Mutations. In Vuex, Mutations can only be used for synchronous operations meaing that you cannot make api calls within them or perform any asynchronous operations. For asynchronous operations, we use Actions instead.
+An Action recieves a context object, this object consists of the same methods and properties that can be found on the store itself e.g `commit`, `state` etc.
+
+Thus, actions can change the state directy and also commit mutations. Let's assume we need to fetch our students list from some backend api, the action implementation for such operation can read thus:
+
+```javascript
+actions: {
+  load_users (context) {
+    // call api to get users
+    axios.get(
+      "https://jsonplaceholder.typicode.com/users"
+      )
+      .then(
+        // handle success
+        (res) => context.commit("LOAD_USERS", res.data),
+        // handle failure
+        (err) => context.commit("HANDLE_ERROR", err)
+      )
+  }
+}
+```
+
+The code above makes an api call to a backend api to fetch students, then commits the mutation that's responsible for updating our state with the list of students by passing it the response data from the backend api. It also handles the error situation by commiting another mutation that handles errors. This would not work if we had used a Mutation instead of an Action.
+
+Actions are a really powerful part of Vuex with more features than has been described here. For more details on Actions check the [Vuex documentation](https://vuex.vuejs.org/guide/actions.html).
 
 ### Using Vuex Getters
 
 Sometimes we would like to return some parts of our state pre-processed (e.g. return date in a particular format) or return a computed value or a default for a null state property, [Getters](https://vuex.vuejs.org/guide/getters.html) enable us do this. Getters are simply functions that receive the state as argument and return a computed property.
 
+Let's assume we need to use/display the number of students in our application in several components, we won't want to write the code to count the number of students in the state in each component that requires this. We can simply create a getter in our store that returns the number of students currently in our state.
+
 ```javascript
 const store = new Vuex.Store({
   state: {
-    todos: [
-      { id: 1, text: "...", done: true },
-      { id: 2, text: "...", done: false }
+    students: [
+      ...
     ]
   },
   getters: {
-    doneTodos: state => {
-      return state.todos.filter(todo => todo.done);
+    numberOfStudents: state => {
+      return state.students.length;
     }
   }
 });
 ```
 
-Getters can the be accessed on the `store.getters` object using property-style access:
+Getters can then be accessed on the `store.getters` object using property-style access:
 
 ```javascript
-store.getters.doneTodosCount;
+store.getters.numberOfStudents;
 ```
 
-If the component is the child of the component that uses the store, you can access getters from `this.$store.getters` e.g.:
+If the component is the child of the root component that imports the store, you can access getters from `this.$store.getters` e.g.:
 
 ```javascript
-this.$store.getters.doneTodosCount;
+this.$store.getters.numberOfStudents;
 ```
 
 You can also access a getter within another getter by passing `getters` as the second argument to the getter inside which you want to reference another getter.
@@ -127,8 +243,8 @@ You can also access a getter within another getter by passing `getters` as the s
 ```javascript
 getters: {
   // ...
-  doneTodosCount: (state, getters) => {
-    return getters.doneTodos.length;
+  studentsCountMessage: (state, getters) => {
+    return `The total students number of students are : ${getters.numberOfStudents}`;
   };
 }
 ```
