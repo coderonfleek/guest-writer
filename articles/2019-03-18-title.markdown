@@ -1,0 +1,49 @@
+---
+layout: post
+title: "Building Desktop Applications with Vue.js and Electron"
+description: "Building Desktop Applications with Vue.js and Electron"
+date: "2019-03-18 08:30"
+author:
+  name: "Fikayo Adepoju"
+  url: "coderonfleek"
+  mail: "fik4christ@yahoo.com"
+  avatar: "https://twitter.com/coderonfleek/profile_image?size=original"
+related:
+  - 2017-11-15-an-example-of-all-possible-elements
+---
+
+# Building Desktop Applications with Vue.js and Electron
+
+**TL;DR:**
+
+## Prerequisites
+
+## What You Will Build
+
+> talk about what they will build with Vue.js and Electron and briefly talk about the API. Then, on the subsection below instruct them how to clone and start the API
+
+### Cloning and Running the API
+
+## Develiping Native Apps with Vue.js and Electron
+
+### Scaffolding a Vue.js and Electron
+
+### Creating a To-Do List Route
+
+### Consuming the API
+
+## Securing Native Vue.js and Electron Apps
+
+> Introduce Auth0, tell them how it will help them develop faster, how it is more secure, etc. Then, add a brief summary (a list perhaps) with the steps needed to secure the API and the native app.
+
+### Create the Auth0 API
+
+### Securing the Backend API with Auth0
+
+### Creating the Auth0 Application
+
+### Securing the Vue.js and Electron Apps with Auth0
+
+## Developing Secure Features
+
+## Conclusion
