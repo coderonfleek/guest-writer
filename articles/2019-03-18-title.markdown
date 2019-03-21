@@ -12,25 +12,182 @@ related:
   - 2017-11-15-an-example-of-all-possible-elements
 ---
 
-# Building Desktop Applications with Vue.js and Electron
+# Building Desktop Applications with Vue and Electron
 
-**TL;DR:**
+**TL;DR:** In the emerging world of "all things Javascript", it is no longer a mind blowing fact that developers can now write desktop applications with Javascript. Since the initial release of Electronjs about 5 years ago, web developers have being empowered to use web technologies to develop applications that run as native desktop apps. One of the many beautiful things about Electronjs is that you can use any Javascript framework you prefer to build the interface of your desktop application. In this article, you will learn how easy it is to use Vue to build interfaces for Elctronjs apps.
 
 ## Prerequisites
 
+1. Basic knowledge of Vue
+2. Basic knowledge of Electronjs
+3. Nodejs installed on your system
+4. Vue-CLI installed on your system
+
 ## What You Will Build
 
-> talk about what they will build with Vue.js and Electron and briefly talk about the API. Then, on the subsection below instruct them how to clone and start the API
+You will be building a To-Do List desktop application using Vue and Electronjs. This application will require users to sign in to the appliaction. The application will then make an authenticated call to fetch a list of To-Dos from a backend API. Users will also be able to sign out of this application.
+
+<!-- > talk about what they will build with Vue.js and Electron and briefly talk about the API. Then, on the subsection below instruct them how to clone and start the API -->
 
 ### Cloning and Running the API
 
-## Develiping Native Apps with Vue.js and Electron
+To get a backend api up and running, we would be cloning a simple api built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. 
+
+Then run `node server` to get the server up and running. Our backend api simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of To-Dos. The project contains 3 main files:
+
+1. `server.js` : This is entry point to the application
+2. `todos.js` : This is a module that simply returns an array of To-Do objects
+3. `routes.js` : This is the routes module which returns the routes used in the backend application. This file only contains one route `/todos`.
+
+## Developing Native Apps with Vue.js and Electron
 
 ### Scaffolding a Vue.js and Electron
 
+To scaffold our desktop application, we would be making use of an excellent open source project that makes it super simple to work with Vue and Electronjs. The project is the [electron-vue](https://github.com/SimulatedGREG/electron-vue) project which comes bundled with other useful Vue libraries like [Vue Router](https://router.vuejs.org/) and [Vuex](https://vuex.vuejs.org/).
+
+Now let's scaffold our application, simply navigate to the directory where you want your project to reside and run the following command:
+
+`vue init simulatedgreg/electron-vue my-desktop-app`
+
+Where `my-desktop-app` is the name you want to give to your project hence you can replace this with any name of your choosing.
+
+Running this command will take you through an interactive installation process. You can simply hit enter to all questions to accept the defaults asides the areas where it asks you about tests, to this you type `n` to decline as we won't be writing tests in this exercise. At some point you will be asked if you want to use `electron-builder` or `electron-packager`, simply go with `electron-builder`.
+
+After responding to all the questions in the installation process a new `electron-vue` project is scaffolded for you. Go into your new project by running `cd my-desktop-app`.
+
+By default, a new `electron-vue` project uses electron@2.x , we need to update the version of electron installed in the `package.json` file to use electron@3.x to ensure that we are using the latest version of electron, thus, in your `devDependencies`, update the `electron` line to this:
+
+`"electron": "^3.0.4"`
+
+Now install required dependencies by running `npm install`. After all modules required have been installed, run `npm run dev` to start the application.
+
+You should have a screen similar to the one below.
+
+![vue-electron homepage](images/vue-electron-initialpage.png)
+
+The developer tools is open by default because the application is currently being run in development mode.
+
 ### Creating a To-Do List Route
 
+Your next task is to create a page for the To-Do list. preferably you would want to make this the first page of the application. Routes in `electron-vue` projects are defined in the `src/renderer/router/index.js` file while components are located in the `src/renderer/components` directory. Go into the `index.js` routes file and replace the contents in the file with the one below:
+
+```javascript
+
+import Vue from "vue";
+import Router from "vue-router";
+
+Vue.use(Router);
+
+export default new Router({
+  routes: [
+    {
+      path: "/",
+      name: "todos-page",
+      component: require("@/components/ToDos").default
+    },
+    {
+      path: "*",
+      redirect: "/"
+    }
+  ]
+});
+
+```
+
+As seen, the landing page is now pointing to a component named `ToDos` which has not been created yet.
+
+So the next step is to create this component and see the landing page display it.
+
+Go into the `components` folder and delete everything inside it. Then create a new file named `ToDos.vue` and paste the content below in it:
+
+```javascript
+
+<template>
+
+	<div>
+		<h2>Welcome to the To-Dos Page</h2>
+	</div>
+</template>
+
+```
+
+Now, when you view your application you should see the screen below:
+
+![todos initial screen](images/todos-initial-screen.png)
+
+
+
 ### Consuming the API
+
+Time to get our To-Dos into our application.
+
+To do this, you would fetch the collection of To-Dos from the backend api (ensure that this is running) and display it in a list on the landing page.
+
+Thus replace the code in `ToDos.vue` with the one below:
+
+```javascript
+
+<template>
+  <div>
+    <div>
+      <div>
+        <button @click="fetchTodos()" class="btn btn-primary">Fetch Todos</button>
+      </div>
+    </div>
+
+    <div>
+      <div>
+        <ul>
+          <li v-for="todo in todos" :key="todo.id">{{todo.task}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const axios = require("axios");
+
+export default {
+  name: "ToDos",
+  data: () => {
+    return {
+      todos: []
+    };
+  },
+
+  methods: {
+    async fetchTodos() {
+      axios
+        .get("http://localhost:1337/todos")
+        .then(response => {
+          console.log(response);
+          this.todos = response.data;
+          console.log(this.todos);
+        })
+        .catch(error => {
+          if (error) throw new Error(error);
+        });
+    }
+  }
+};
+</script>
+
+
+```
+
+In the code above, we create a `data` property called `todos` to hold our to-dos collection, then create a method called `fetchTodos` to call our backend endpoint and load our to-do collection into the `todos` data property.
+
+In the template we create a button that calls the `fetchTodos` method on click and a list that displays the to-dos on the page.
+
+After making this change you should have a screen similar to the one below whe you click the `Fetch Todos` button.
+
+![todos list](images/todos-fetch.png)
+
+Wholla! You have successfully created a desktop application that fetches data from a remote backend.
+
+In the next section you will be securing the data from the backend such that only authenticated users will be able to fetch it.
+
 
 ## Securing Native Vue.js and Electron Apps
 
@@ -44,6 +201,6 @@ related:
 
 ### Securing the Vue.js and Electron Apps with Auth0
 
-## Developing Secure Features
+
 
 ## Conclusion
