@@ -326,7 +326,7 @@ Install these packages with the following command:
 
 `npm install jwt-decode request keytar bootstrap --save`
 
-NB: After installing `keytar` any subsequent module installation you might result in a versioning error between your keytar installation and Nodejs version. Simply run the command:
+NB: After installing `keytar` any subsequent module installation you might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency `npm install electron-rebuild --save-dev`, then run the command:
 
 `./node_modules/.bin/electron-rebuild ` on Unix/Linux based systems or `.\node_modules\.bin\electron-rebuild.cmd ` if you're on Windows to fix this issue.
 
@@ -496,9 +496,301 @@ export default {
 
 ```
 
-Alot is going on in this file
+Alot is going on in this file, so let's take sometime to break it down.
+
+First, variables are defined to get the environment variables, define an identifier for our keychain service `my-todo-app` and get our `keytar` account.
+
+Next, more variables are defined to hold the access token gotten from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
 
 
+The following functions are then defined
+
+1. `getAccessToken` : returns the access token from Auth0 after a successfull authentication
+2. `getProfile` : returns the profile of the logged in user
+3. `getAuthenticationURL` : constructs and returns an Auth0 authentication page URL.
+4. `refreshTokens` : This method gets the refresh token saved in our keychain and uses it to fetch a new access token from Auth0's API. It then returns a promise that resolves with the new access token.  
+5. `loadTokens` : This method takes the callback URL from Auth0 after a successfull authentication and gets the **authorization code** from the callback URL query string. It then uses this code to call the Auth0 api to get the access token, user profile and refresh token. The access token and profile are saved in our variables while the refresh token is save in our keychain.
+6. `logout` : This method, deletes our refresh token from our keychain and sets the profile, access token and refresh token variables to `null`.
+
+All these methods are then returned from the module for public access.
+
+Next, create another file in the `src/main/services` folder named `app-process.js` and paste in the code below:
+
+```javascript
+
+import { BrowserWindow } from "electron";
+
+
+let mainWindow;
+const winURL =
+  process.env.NODE_ENV === "development"
+    ? `http://localhost:9080`
+    : `file://${__dirname}/index.html`;
+
+function createAppWindow() {
+  /**
+   * Initial window options
+   */
+  mainWindow = new BrowserWindow({
+    height: 563,
+    useContentSize: true,
+    width: 1000
+  });
+
+  mainWindow.loadURL(winURL);
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+}
+
+
+export default createAppWindow;
+
+
+```
+
+This module basically exports a method that creates a window that loads the homepage of our Vue application. Based on the environment in which our application is running in it either returns the development URL from `localhost` or the file URL for the application's `index.html` file.
+
+Now, create a third file in the same directory named `auth-process.js` and paste in the code below:
+
+```javascript
+
+import { BrowserWindow } from "electron";
+import authService from "./auth-service";
+import createAppWindow from "./app-process";
+
+let win = null;
+
+function createAuthWindow() {
+  destroyAuthWin();
+
+  // Create the browser window.
+  win = new BrowserWindow({
+    width: 1000,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: false
+    }
+  });
+
+  win.loadURL(authService.getAuthenticationURL());
+
+  const {
+    session: { webRequest }
+  } = win.webContents;
+
+  const filter = {
+    urls: ["file:///callback*"]
+  };
+
+  webRequest.onBeforeRequest(filter, async ({ url }) => {
+    await authService.loadTokens(url);
+    createAppWindow();
+    return destroyAuthWin();
+  });
+
+  win.on("authenticated", () => {
+    destroyAuthWin();
+  });
+
+  win.on("closed", () => {
+    win = null;
+  });
+}
+
+function destroyAuthWin() {
+  if (!win) return;
+  win.close();
+  win = null;
+}
+
+export default createAuthWindow;
+
+
+
+```
+
+This module brings in the two modules earlier created and exports a function that handles the authentication process.
+
+This module contains two methods, one to create the authentication windows and another to destroy it.
+
+The `createAuthWindow` starts by destroying any existing authentication window and goes ahead to create an authentication window by loading the Auth0 authentication URL from our `auth-service.js` module. It then calls the `onBeforeRequest` method `webRequest` property of Electronjs's `Session` class to call the `loadTokens` method which takes in the callback URL from Auth0's authentication process.
+
+Once the promise resolves, the `createAppWindow` method is then called to load our Vue application and lastly the authentication window is destroyed by calling `destroyAuthWin`.
+
+This method also registers event handlers to handle when the application window is closed and when an `authenticated` event emitted.
+
+The last thing to do in the main process is to tie everything together in the `src/main/index.js` file which is the entry point for our application's main process.
+
+Replace the content of the `index.js` file with the code below:
+
+```javascript
+
+import { app, BrowserWindow } from "electron";
+import createAuthWindow from "./services/auth-process";
+import createAppWindow from "./services/app-process";
+import authService from "./services/auth-service";
+
+if (process.env.NODE_ENV !== "development") {
+  global.__static = require("path")
+    .join(__dirname, "/static")
+    .replace(/\\/g, "\\\\");
+}
+
+let mainWindow;
+const winURL =
+  process.env.NODE_ENV === "development"
+    ? `http://localhost:9080`
+    : `file://${__dirname}/index.html`;
+
+
+
+async function showWindow() {
+  try {
+    await authService.refreshTokens();
+    
+    return createAppWindow();
+  } catch (err) {
+    createAuthWindow();
+  }
+}
+
+app.on("ready", showWindow);
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", () => {
+  if (mainWindow === null) {
+    showWindow();
+  }
+});
+
+```
+
+The main point of focus here is the `showWindow` method. This method tries to refresh the tokens as a check to see if an authenticated session is in place. If true, the tokens are successfully refreshed and the Vue application is loaded with access tokens to make authenticated API calls. If false, an error is thrown which is caught and reacted to by loading the Auth0 authentication page in order for the user to sign in.
+
+The `showWindow` is set as the handler for our Electronjs application's `ready` event.
+
+Now run the application using `npm run dev`. If you have done everything correctly you should see a screen similar to the one below:
+
+![Auth0 Login Screen](images/auth0-screen.png)
+
+
+If you do not see this screen or get an error, simply trace your steps back along the article and also ensure that your Auth0 credentials in your `env.json` file are correct.
+
+
+Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (Our To-Dos API) which is now protected.
+
+You will also be added some little styling with bootstrap.
+
+Simply go into the `src/renderer/components` folder and replace the contents of the `ToDos.vue` component with the code below:
+
+```javascript
+
+<template>
+  <div>
+    <div class="row">
+      <header class="col-md-12">
+        <nav class="navbar navbar-light bg-light">
+          <a class="navbar-brand">Vue TODO List</a>
+          <button class="btn btn-danger my-2 my-sm-0" @click="logout()" type="button">Logout</button>
+        </nav>
+      </header>
+    </div>
+
+    <div class="row" id="fetch-button-row">
+      <div class="col-md-12">
+        <button @click="fetchTodos()" class="btn btn-primary">Fetch Todos</button>
+      </div>
+      
+    </div>
+
+    <div class="row" id="todos-row">
+      <div class="col-md-12">
+        <ul class="list-group">
+          <li class="list-group-item" v-for="todo in todos" :key="todo.id">{{todo.task}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const { remote } = window.require("electron");
+const axios = require("axios"); 
+import authService from "../../main/services/auth-service";
+export default {
+  name: "HelloWorld",
+  data: () => {
+    return {
+      todos: []
+    };
+  },
+  
+  methods: {
+    logout() {
+      authService.logout();
+      remote.getCurrentWindow().close();
+    },
+    async fetchTodos() {
+      console.log(authService.getAccessToken());
+
+      let accessToken = await authService.refreshTokens();
+
+      console.log(accessToken);
+
+      axios
+        .get("http://localhost:1337/todos", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        .then(response => {
+          console.log(response);
+          this.todos = response.data;
+          console.log(this.todos);
+        })
+        .catch(error => {
+          if (error) throw new Error(error);
+        });
+    }
+  }
+};
+</script>
+
+
+<style scoped>
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+#fetch-button-row,
+#todos-row {
+  margin: 10px;
+}
+</style>
+
+
+
+
+```
+
+In the above code, the `fetchTodos` method is refactored to get the access token and use it to make an authenticated call to our backend API setting the `Authorization` header to make use of our access token.
+
+Some boostrap styling was also added to give the page a simple face lift.
+
+A **Log Out** functionality has also been added to the application.
+
+Now run this application again. This time you should be able to login successfully and fetch the To-Dos list from the backend. Your screen should then look like the one below:
+
+
+
+![Final Result](images/new-todo-list.png)
 
 
 ## Conclusion
+
+As seen in this article, creating native desktop experiences with web technologies is a breeze when you use the right tools, and the `electron-vue` package enables developers to get the best of both worlds of Vue, a fast rising developer friendly frontend framework, and Electronjs.
