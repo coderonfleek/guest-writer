@@ -14,26 +14,26 @@ related:
 
 # Building Desktop Applications with Vue and Electron
 
-**TL;DR:** In the emerging world of "all things Javascript", it is no longer a mind blowing fact that developers can now write desktop applications with Javascript. Since the initial release of Electronjs about 5 years ago, web developers have being empowered to use web technologies to develop applications that run as native desktop apps. One of the many beautiful things about Electronjs is that you can use any Javascript framework you prefer to build the interface of your desktop application. In this article, you will learn how easy it is to use Vue to build interfaces for Elctronjs apps.
+**TL;DR:** In the emerging world of "all things Javascript", it is no longer a mind blowing fact that developers can now write desktop applications with Javascript. Since the initial release of [Electronjs](https://electronjs.org/) about 5 years ago, web developers have being empowered to use web technologies to develop applications that run as native desktop apps. One of the many beautiful things about Electronjs is that you can use any Javascript framework you prefer to build the interface of your desktop application. In this article, you will learn how easy it is to use Vue to build interfaces for Electronjs apps.
 
 ## Prerequisites
 
-1. Basic knowledge of Vue
+1. Basic knowledge of [Vue](https://vuejs.org)
 2. Basic knowledge of Electronjs
-3. Nodejs installed on your system
+3. [Nodejs](https://nodejs.org) installed on your system
 4. Vue-CLI installed on your system
 
 ## What You Will Build
 
-You will be building a To-Do List desktop application using Vue and Electronjs. This application will require users to sign in to the appliaction. The application will then make an authenticated call to fetch a list of To-Dos from a backend API. Users will also be able to sign out of this application.
+You will be building a To-Do List desktop application using Vue and Electronjs. This application will require users to sign in to the application. The application will then make an authenticated call to fetch a list of To-Dos from a secured backend API. Users will also be able to sign out of this application.
 
-<!-- > talk about what they will build with Vue.js and Electron and briefly talk about the API. Then, on the subsection below instruct them how to clone and start the API -->
+
 
 ### Cloning and Running the API
 
-To get a backend api up and running, we would be cloning a simple api built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. 
+To get a backend API up and running, we would be cloning a simple api built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. Then run `node server` to get the server up and running.
 
-Then run `node server` to get the server up and running. Our backend api simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of To-Dos. The project contains 3 main files:
+Our backend api simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of To-Dos. The project contains 3 main files:
 
 1. `server.js` : This is entry point to the application
 2. `todos.js` : This is a module that simply returns an array of To-Do objects
@@ -41,11 +41,11 @@ Then run `node server` to get the server up and running. Our backend api simply 
 
 ## Developing Native Apps with Vue.js and Electron
 
-### Scaffolding a Vue.js and Electron
+### Scaffolding a Vue and Electron Application
 
-To scaffold our desktop application, we would be making use of an excellent open source project that makes it super simple to work with Vue and Electronjs. The project is the [electron-vue](https://github.com/SimulatedGREG/electron-vue) project which comes bundled with other useful Vue libraries like [Vue Router](https://router.vuejs.org/) and [Vuex](https://vuex.vuejs.org/).
+To scaffold your desktop application, you would be making use of an excellent open source project that makes it super simple to work with Vue and Electronjs. This project is the [electron-vue](https://github.com/SimulatedGREG/electron-vue) project which comes bundled with other useful Vue libraries like [Vue Router](https://router.vuejs.org/) and [Vuex](https://vuex.vuejs.org/).
 
-Now let's scaffold our application, simply navigate to the directory where you want your project to reside and run the following command:
+Now scaffold your application by navigating to the directory where you want your project to reside and run the following command:
 
 `vue init simulatedgreg/electron-vue my-desktop-app`
 
@@ -55,7 +55,7 @@ Running this command will take you through an interactive installation process. 
 
 After responding to all the questions in the installation process a new `electron-vue` project is scaffolded for you. Go into your new project by running `cd my-desktop-app`.
 
-By default, a new `electron-vue` project uses electron@2.x , we need to update the version of electron installed in the `package.json` file to use electron@3.x to ensure that we are using the latest version of electron, thus, in your `devDependencies`, update the `electron` line to this:
+By default, a new `electron-vue` project uses electron@2.x , you need to update the version of electron installed in the `package.json` file to use electron@3.x to ensure that we are using the latest version of electron, thus, in your `devDependencies`, update the `electron` line to this:
 
 `"electron": "^3.0.4"`
 
@@ -69,7 +69,7 @@ The developer tools is open by default because the application is currently bein
 
 ### Creating a To-Do List Route
 
-Your next task is to create a page for the To-Do list. preferably you would want to make this the first page of the application. Routes in `electron-vue` projects are defined in the `src/renderer/router/index.js` file while components are located in the `src/renderer/components` directory. Go into the `index.js` routes file and replace the contents in the file with the one below:
+Your next task is to create a page for the To-Do list, preferably you would want to make this the first page of the application. Routes in `electron-vue` projects are defined in the `src/renderer/router/index.js` file while components are located in the `src/renderer/components` directory. Go into the `index.js` routes file and replace the contents in the file with the one below:
 
 ```javascript
 
@@ -176,9 +176,9 @@ export default {
 
 ```
 
-In the code above, we create a `data` property called `todos` to hold our to-dos collection, then create a method called `fetchTodos` to call our backend endpoint and load our to-do collection into the `todos` data property.
+In the code above, we create a `data` property called `todos` to hold our To-Dos collection, then create a method called `fetchTodos` to call our backend endpoint and load our To-Do collection into the `todos` data property.
 
-In the template we create a button that calls the `fetchTodos` method on click and a list that displays the to-dos on the page.
+In the template we create a button that calls the `fetchTodos` method on click and a list that displays the To-Dos on the page.
 
 After making this change you should have a screen similar to the one below whe you click the `Fetch Todos` button.
 
@@ -189,19 +189,18 @@ Wholla! You have successfully created a desktop application that fetches data fr
 In the next section you will be securing the data from the backend such that only authenticated users will be able to fetch it.
 
 
-## Securing Native Vue.js and Electron Apps
+## Securing Native Vue and Electron Apps
 
-<!-- > Introduce Auth0, tell them how it will help them develop faster, how it is more secure, etc. Then, add a brief summary (a list perhaps) with the steps needed to secure the API and the native app.
- -->
- When it comes to securing applications, Auth0 stands out as a leading platform to help developers easily add enterprise standard authentication and security features to their applications.
 
- Whether its a simple application for a demo or a large enterprise application to be used by millions of users, Auth0 offers a suite of highly secure easy to use solutions to achieve features such as Single Sign On, User management, Multifactor authentication etc.
+ When it comes to securing applications, [Auth0](https://auth0.com/) stands out as a leading platform to help developers easily add enterprise standard authentication and security features to their applications.
+
+ Whether its a simple application for a demo or a large enterprise application to be used by millions of users, [Auth0](https://auth0.com/) offers a suite of highly secure, easy to use solutions to achieve features such as Single Sign On, User management, Multifactor authentication etc.
 
  On the 11th of Februrary, 2019, Auth0 was named as the Frost & Sullivan's 2019 Global Identity and Access Management Technology Innovation Award winner, further stamping Auth0 as an authority in Identity management.
 
-We will be using Auth0 to secure our backend API and our Electron desktop application.
+You will be using Auth0 to secure our backend API and our Electron desktop application.
 
-Below is a summary of steps we will be taking to achieve that:
+Below is a summary of steps you will be taking to achieve that:
 
 1. Create an new Auth0 account (use an existing one if you have previously registered)
 2. Register an Auth0 API for your backend
@@ -229,7 +228,7 @@ The next page you see is your API details page. Click on the **Settings** tab, s
 
 ### Securing the Backend API with Auth0
 
-The next step is to secure our backend API with Auth0. Go into the root of your backend api (remember? that simple Nodejs backend we cloned). Shut down the API using `Ctrl + C` if it is currently running.
+The next step is to secure your backend API with Auth0. Go into the root of your backend application (remember? that simple Nodejs backend we cloned). Shut down the API using `Ctrl + C` if it is currently running.
 
 You will need to install 2 packages, the `jwks-rsa` library which is used to retrieve RSA signing keys from a JWKS (JSON Web Key Set) endpoint, thus this will be retrieving keys from the the Auth0 API you just created.
 
@@ -300,7 +299,7 @@ In the above code, token authentication is set up using the `jwks-rsa` and `expr
 
 One the line `app.use(jwtCheck);`, the application is instructed to use the token check implemented to check that each request to the API comes with the correct token in its `Authorization` header.
 
-Now if you try to access the endpoint `http://localhost:1337/todos`, you will get an error that says "No authorization token was found". This indicates that an authentication is now required to access that endpoint
+Now if you try to access the endpoint `http://localhost:1337/todos`, you will get an error that says **No authorization token was found**. This indicates that an access token is now required to access that endpoint
 
 In the following section, you would go ahead to add authentication to your Electronjs desktop application.
 
@@ -312,11 +311,11 @@ You will see a dialog like the one shown below, enter a name for your applicatio
 
 ![Create Client Application](images/create-client.png)
 
-Once the application has been successfully created you willbe taken to a screen where you can see all your application's details including settings.
+Once the application has been successfully created you will be taken to a screen where you can see all your application's details including settings.
 
 Click on the **Settings** tab and scroll down to the *Allowed Callback URLs* and enter the value `file:///callback`. Scroll down and click **Save Changes**.
 
-### Securing the Vue.js and Electron Apps with Auth0
+### Securing the Vue and Electronjs Apps with Auth0
 
 Now back to the Electronjs desktop application. What is to be achieved here is to present a Sign In screen for users to log in to access the application before we then present the To-Dos homepage.
 
@@ -326,11 +325,11 @@ Install these packages with the following command:
 
 `npm install jwt-decode request keytar bootstrap --save`
 
-NB: After installing `keytar` any subsequent module installation you might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency `npm install electron-rebuild --save-dev`, then run the command:
+**NB:** After installing `keytar` any subsequent running of the `npm install` command might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency `npm install electron-rebuild --save-dev`, then run the command:
 
 `./node_modules/.bin/electron-rebuild ` on Unix/Linux based systems or `.\node_modules\.bin\electron-rebuild.cmd ` if you're on Windows to fix this issue.
 
-Next stepis to create an `env.json` file tohold our Auth0 credentialsfor the client, create this file in the root of your `electron-vue` project.
+Next step is to create an `env.json` file to hold our Auth0 credentials for the client, create this file in the root of your `electron-vue` project.
 
 ```javascript
 
@@ -345,13 +344,13 @@ Next stepis to create an `env.json` file tohold our Auth0 credentialsfor the cli
 You can get your client Id from your Auth0 application details page.
 
 
-Next thing you will do is create 3 modules/services. Each service will do the following
+Next thing you will do is create 3 modules. Each service will do the following
 
-1. A service to hold all the methods and properties to handle our authentication flow (auth-service.js)
-2. A service that controls the authentication flow process (auth-process.js)
-3. A service that loads our application homepage (app-process.js)
+1. A module to hold all the methods and properties to handle our authentication flow (auth-service.js)
+2. A module that controls the authentication flow process (auth-process.js)
+3. A module that loads our application homepage (app-process.js)
 
-All these services will reside in the `main` process of our Electronjs application
+All these modules will reside in the `main` process of our Electronjs application
 
 Navigate to the directory `src/main` and create a folder named `services`.
 
@@ -498,7 +497,7 @@ export default {
 
 Alot is going on in this file, so let's take sometime to break it down.
 
-First, variables are defined to get the environment variables, define an identifier for our keychain service `my-todo-app` and get our `keytar` account.
+First, variables are defined to hold the environment variables in the `env.json` file, then another variable is defined to hold the identifier for the keychain service : `my-todo-app` (this value is to be unique for every application) and then another defined to get the `keytar` account.
 
 Next, more variables are defined to hold the access token gotten from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
 
@@ -509,8 +508,8 @@ The following functions are then defined
 2. `getProfile` : returns the profile of the logged in user
 3. `getAuthenticationURL` : constructs and returns an Auth0 authentication page URL.
 4. `refreshTokens` : This method gets the refresh token saved in our keychain and uses it to fetch a new access token from Auth0's API. It then returns a promise that resolves with the new access token.  
-5. `loadTokens` : This method takes the callback URL from Auth0 after a successfull authentication and gets the **authorization code** from the callback URL query string. It then uses this code to call the Auth0 api to get the access token, user profile and refresh token. The access token and profile are saved in our variables while the refresh token is save in our keychain.
-6. `logout` : This method, deletes our refresh token from our keychain and sets the profile, access token and refresh token variables to `null`.
+5. `loadTokens` : This method takes the callback URL from Auth0 after a successfull authentication and gets the **authorization code** from the callback URL query string. It then uses this code to call the Auth0 api to get the access token, user profile and refresh token. The access token and profile are saved in variables while the refresh token is saved in keychain.
+6. `logout` : This method deletes the refresh token from keychain and sets the profile, access token and refresh token variables to `null`.
 
 All these methods are then returned from the module for public access.
 
@@ -550,7 +549,7 @@ export default createAppWindow;
 
 ```
 
-This module basically exports a method that creates a window that loads the homepage of our Vue application. Based on the environment in which our application is running in it either returns the development URL from `localhost` or the file URL for the application's `index.html` file.
+This module basically exports a method that creates a window that loads the homepage of our Vue application. Based on the environment in which our application is running in, it either returns the development URL from `localhost` or the file URL for the application's `index.html` file.
 
 Now, create a third file in the same directory named `auth-process.js` and paste in the code below:
 
@@ -613,13 +612,13 @@ export default createAuthWindow;
 
 This module brings in the two modules earlier created and exports a function that handles the authentication process.
 
-This module contains two methods, one to create the authentication windows and another to destroy it.
+This module contains two methods, one to create the authentication window and another to destroy it.
 
-The `createAuthWindow` starts by destroying any existing authentication window and goes ahead to create an authentication window by loading the Auth0 authentication URL from our `auth-service.js` module. It then calls the `onBeforeRequest` method `webRequest` property of Electronjs's `Session` class to call the `loadTokens` method which takes in the callback URL from Auth0's authentication process.
+The `createAuthWindow` starts by destroying any existing authentication window and goes ahead to create an authentication window by loading the Auth0 authentication URL from the `auth-service.js` module. It then calls the `onBeforeRequest` method of the `webRequest` property of Electronjs's `Session` class to call the `loadTokens` method which takes in the callback URL from Auth0's authentication process.
 
 Once the promise resolves, the `createAppWindow` method is then called to load our Vue application and lastly the authentication window is destroyed by calling `destroyAuthWin`.
 
-This method also registers event handlers to handle when the application window is closed and when an `authenticated` event emitted.
+This method also registers event handlers to handle when the application window is closed and when an `authenticated` event is emitted.
 
 The last thing to do in the main process is to tie everything together in the `src/main/index.js` file which is the entry point for our application's main process.
 
@@ -686,7 +685,7 @@ If you do not see this screen or get an error, simply trace your steps back alon
 
 Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (Our To-Dos API) which is now protected.
 
-You will also be added some little styling with bootstrap.
+You will also be adding some little styling with bootstrap.
 
 Simply go into the `src/renderer/components` folder and replace the contents of the `ToDos.vue` component with the code below:
 
