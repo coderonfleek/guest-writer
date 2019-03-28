@@ -19,9 +19,10 @@ related:
 ## Prerequisites
 
 1. Basic knowledge of [Vue](https://vuejs.org)
-2. Basic knowledge of Electronjs
+2. Basic knowledge of [Electronjs](https://electronjs.org/)
 3. [Nodejs](https://nodejs.org) installed on your system
-4. Vue-CLI installed on your system
+4. [Vue-CLI](https://cli.vuejs.org) installed on your system : `npm install -g @vue/cli`
+5. Electronjs installed on your system : `npm install electron -g`
 
 ## What You Will Build
 
@@ -51,7 +52,7 @@ Now scaffold your application by navigating to the directory where you want your
 
 Where `my-desktop-app` is the name you want to give to your project hence you can replace this with any name of your choosing.
 
-Running this command will take you through an interactive installation process. You can simply hit enter to all questions to accept the defaults asides the areas where it asks you about tests, to this you type `n` to decline as we won't be writing tests in this exercise. At some point you will be asked if you want to use `electron-builder` or `electron-packager`, simply go with `electron-builder`.
+Running this command will take you through an interactive installation process. You can simply hit enter to all questions to accept the defaults asides the areas where it asks you about tests and linting, to this you type `n` to decline as we won't be writing tests in this exercise. At some point you will be asked if you want to use `electron-builder` or `electron-packager`, simply go with `electron-builder`.
 
 After responding to all the questions in the installation process a new `electron-vue` project is scaffolded for you. Go into your new project by running `cd my-desktop-app`.
 
@@ -119,7 +120,7 @@ Now, when you view your application you should see the screen below:
 
 ### Consuming the API
 
-Time to get our To-Dos into our application.
+Time to get your To-Dos into your application.
 
 To do this, you would fetch the collection of To-Dos from the backend api (ensure that this is running) and display it in a list on the landing page.
 
@@ -180,7 +181,7 @@ In the code above, we create a `data` property called `todos` to hold our To-Dos
 
 In the template we create a button that calls the `fetchTodos` method on click and a list that displays the To-Dos on the page.
 
-After making this change you should have a screen similar to the one below whe you click the `Fetch Todos` button.
+After making this change you should have a screen similar to the one below when you click the `Fetch Todos` button.
 
 ![todos list](images/todos-fetch.png)
 
@@ -198,16 +199,16 @@ In the next section you will be securing the data from the backend such that onl
 
  On the 11th of Februrary, 2019, Auth0 was named as the Frost & Sullivan's 2019 Global Identity and Access Management Technology Innovation Award winner, further stamping Auth0 as an authority in Identity management.
 
-You will be using Auth0 to secure our backend API and our Electron desktop application.
+You will be using Auth0 to secure your backend API and your Electron desktop application.
 
 Below is a summary of steps you will be taking to achieve that:
 
 1. Create an new Auth0 account (use an existing one if you have previously registered)
 2. Register an Auth0 API for your backend
-3. Create an Auth0 native client application for the Electron app
+3. Create an Auth0 native client application for the Electronjs app
 4. Secure the backend using the Auth0 API details to add token authentication to protect your endpoint
-5. Secure the Electron application using your Auth0 client application details to load an authentication page for users to sign into your application 
-6. Upon successful sign in the application recieves authentication tokens to make authenticated calls to your now secured backend API
+5. Secure the Electronjs application using your Auth0 client application details to load an authentication page for users to sign into your application 
+6. Upon successful sign in, the application recieves authentication tokens to make authenticated calls to your now secured backend API
 
 ### Create the Auth0 API
 
@@ -223,7 +224,7 @@ Leave the default **RS256** as the Signing algorithm.
 
 Click the **Create** button and your Auth0 API is all set.
 
-The next page you see is your API details page. Click on the **Settings** tab, scroll down and ensure that the *Allow Offline Access* option is enabled. This will enable Auth0 to allow appications request for refresh tokens for your API.
+The next page you see is your API details page. Click on the **Settings** tab, scroll down and ensure that the *Allow Offline Access* option is enabled, if not, enable it and click the **Save** button. This will enable Auth0 to allow appications request for refresh tokens for your API.
 
 
 ### Securing the Backend API with Auth0
@@ -252,7 +253,7 @@ Great! After successfully installing these libraries, you will need to create a 
 
 Your Auth0 domain should be your `[YOUR_USERNAME].auth0.com` .
 
-The next step to securing the API is to use the libraries installed and our Auth0 API credentials to implement token authentication on our backend. To do this, simply replace the code in `server.js` with the one below:
+The next step to securing the API is to use the libraries installed and your Auth0 API credentials to implement token authentication on the backend. To do this, simply replace the code in `server.js` with the one below:
 
 ```javascript
 
@@ -295,13 +296,13 @@ app.listen(port, () => console.log(`Server running on localhost:${port}`));
 
 ```
 
-In the above code, token authentication is set up using the `jwks-rsa` and `express-jwt` libraries using the Auth0 API details.
+In the above code, token authentication is set up using the `jwks-rsa` and `express-jwt` libraries with the Auth0 API details.
 
 One the line `app.use(jwtCheck);`, the application is instructed to use the token check implemented to check that each request to the API comes with the correct token in its `Authorization` header.
 
-Now if you try to access the endpoint `http://localhost:1337/todos`, you will get an error that says **No authorization token was found**. This indicates that an access token is now required to access that endpoint
+Now if you try to access the endpoint `http://localhost:1337/todos` (remember to start your server by running `node server`), you will get an error that says **No authorization token was found**. This indicates that an access token is now required to access that endpoint
 
-In the following section, you would go ahead to add authentication to your Electronjs desktop application.
+In the next section, you would go ahead to add authentication to your Electronjs desktop application.
 
 ### Creating the Auth0 Application
 
@@ -317,7 +318,7 @@ Click on the **Settings** tab and scroll down to the *Allowed Callback URLs* and
 
 ### Securing the Vue and Electronjs Apps with Auth0
 
-Now back to the Electronjs desktop application. What is to be achieved here is to present a Sign In screen for users to log in to access the application before we then present the To-Dos homepage.
+Now back to the Electronjs desktop application. What is to be achieved here is to present a Sign In screen for users to log in to access the application before the To-Dos homepage is then presented upon successfull log in.
 
 To do this, some packages need to be installed in your Electronjs app. First is `jwt-decode` to help decode JSON Web Tokens, `request` library to make API calls in Electronjs main process and `keytar` which is a  native Node module to get, add, replace, and delete passwords in the system's keychain, then we add `bootstrap` for some basic styling.
 
@@ -325,7 +326,7 @@ Install these packages with the following command:
 
 `npm install jwt-decode request keytar bootstrap --save`
 
-**NB:** After installing `keytar` any subsequent running of the `npm install` command might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency `npm install electron-rebuild --save-dev`, then run the command:
+**NB:** After installing `keytar` any subsequent running of the `npm install`  or `npm run dev` commands might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency (`npm install electron-rebuild --save-dev`), then run the command:
 
 `./node_modules/.bin/electron-rebuild ` on Unix/Linux based systems or `.\node_modules\.bin\electron-rebuild.cmd ` if you're on Windows to fix this issue.
 
@@ -341,20 +342,20 @@ Next step is to create an `env.json` file to hold our Auth0 credentials for the 
 
 ```
 
-You can get your client Id from your Auth0 application details page.
+You can get your client Id from your Auth0 application details page in the **Settings** section.
 
 
-Next thing you will do is create 3 modules. Each service will do the following
+Next thing you will do is create 3 modules. Each module will do the following
 
-1. A module to hold all the methods and properties to handle our authentication flow (auth-service.js)
+1. A module to hold all the methods and properties to handle the authentication flow (auth-service.js)
 2. A module that controls the authentication flow process (auth-process.js)
-3. A module that loads our application homepage (app-process.js)
+3. A module that loads the application homepage (app-process.js)
 
-All these modules will reside in the `main` process of our Electronjs application
+All these modules will reside in the `main` process of the Electronjs application
 
 Navigate to the directory `src/main` and create a folder named `services`.
 
-Inside this `services` folder create a file named `auth-service.js` and paste in the code below:
+Inside this `services` folder, create a file named `auth-service.js` and paste in the code below:
 
 ```javascript
 
@@ -682,8 +683,10 @@ Now run the application using `npm run dev`. If you have done everything correct
 
 If you do not see this screen or get an error, simply trace your steps back along the article and also ensure that your Auth0 credentials in your `env.json` file are correct.
 
+If you get the versioning error between your `keytar` and Nodejs version, apply the fix stated at the start of this section after installing the required packages.
 
-Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (Our To-Dos API) which is now protected.
+
+Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (The To-Dos API) which is now protected.
 
 You will also be adding some little styling with bootstrap.
 
@@ -777,13 +780,15 @@ export default {
 
 ```
 
-In the above code, the `fetchTodos` method is refactored to get the access token and use it to make an authenticated call to our backend API setting the `Authorization` header to make use of our access token.
+In the above code, the `fetchTodos` method is refactored to get the access token and use it to make an authenticated call to the backend API setting the `Authorization` header to make use of the access token.
 
-Some boostrap styling was also added to give the page a simple face lift.
+Some bootstrap classes and layout structure were also added to give the page a simple face lift.
 
 A **Log Out** functionality has also been added to the application.
 
-Now run this application again. This time you should be able to login successfully and fetch the To-Dos list from the backend. Your screen should then look like the one below:
+Now run this application again using `npm run dev`. This time you should be able to login successfully and fetch the To-Dos list from the backend (If your keychain tool prompts you to allow the application to access the keychain, simply click **Allow** or **Always Allow**). 
+
+Your screen should then look like the one below:
 
 
 
