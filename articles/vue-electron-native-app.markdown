@@ -32,7 +32,7 @@ You will be building a To-Do List desktop application using Vue and Electronjs. 
 
 ### Cloning and Running the API
 
-To get a backend API up and running, we would be cloning a simple API built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. Then run `node server` to get the server up and running.
+To get a backend API up and running, we will be cloning a simple API built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. Then run `node server` to get the server up and running.
 
 Our backend API simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of To-Dos. The project contains 3 main files:
 
