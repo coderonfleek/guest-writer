@@ -50,7 +50,13 @@ Now scaffold your application by navigating to the directory where you want your
 
 Where `my-desktop-app` is the name you want to give to your project hence you can replace this with any name of your choosing.
 
-Running this command will take you through an interactive installation process. You can simply hit enter to all questions to accept the defaults asides the areas where it asks you about tests and linting, to this you type `n` to decline as we won't be writing tests in this exercise. At some point you will be asked if you want to use `electron-builder` or `electron-packager`, simply go with `electron-builder`.
+Running this command will take you through an interactive installation process. When asked the following:
+
+- Use linting with ESLint?
+- Set up unit testing with Karma + Mocha?
+- Set up end-to-end testing with Spectron + Mocha?
+
+Simply type in `n` for all three questions. We will not be writing tests in this exercise,. When asked the question, "What build tool would you like to use?", choose the `electron-builder` option. You can accept the defaults for the remaining questions by hitting the return key.
 
 After responding to all the questions in the installation process a new `electron-vue` project is scaffolded for you. Go into your new project by running `cd my-desktop-app`.
 
@@ -58,7 +64,7 @@ By default, a new `electron-vue` project uses electron@2.x, you need to update t
 
 `"electron": "^3.0.4"`
 
-Now install the required dependencies by running `npm install`. After all required modules required have been installed, run `npm run dev` to start the application.
+Now install the required dependencies by running `npm install`. After all required modules have been installed, run `npm run dev` to start the application.
 
 You should have a screen similar to the one below.
 
@@ -170,7 +176,7 @@ export default {
 
 In the code above, you will create a `data` property called `todos` to hold the To-Dos collection, then create a method called `fetchTodos` to call the backend endpoint and load the To-Do collection into the `todos` data property.
 
-In the template, you will create a button that calls the `fetchTodos` method on click and a list that displays the To-Dos on the page.
+In the template, you will create a button that calls the `fetchTodos` method when clicked and a list that displays the To-Dos on the page.
 
 After making this change you should have a screen similar to the one below when you click the `Fetch Todos` button.
 
@@ -186,7 +192,7 @@ When it comes to securing applications, [Auth0](https://auth0.com/) stands out a
 
 Whether its a simple application for a demo or a large enterprise application to be used by millions of users, [Auth0](https://auth0.com/) offers a suite of highly secure, easy to use solutions to achieve features such as Single Sign-On, User management, Multifactor authentication, etc.
 
-On the 11th of February, 2019, Auth0 was named as the Frost & Sullivan's 2019 Global Identity and Access Management Technology Innovation Award winner, further stamping Auth0 as an authority in Identity management.
+On the 11th of February, 2019, Auth0 was named as the Frost & Sullivan's 2019 Global Identity and Access Management Technology Innovation [Award winner](https://auth0.com/blog/auth0-named-technology-innovation-award-winner-by-frost-and-sullivan/), further stamping Auth0 as an authority in Identity management.
 
 You will be using Auth0 to secure your backend API and your Electron desktop application.
 
@@ -309,7 +315,7 @@ Install these packages with the following command:
 
 `npm install jwt-decode request keytar bootstrap --save`
 
-**NB:** After installing `keytar` any subsequent running of the `npm install` or `npm run dev` commands might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency (`npm install electron-rebuild --save-dev`), then run the command:
+**Note:** After installing `keytar` any subsequent running of the `npm install` or `npm run dev` commands might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency (`npm install electron-rebuild --save-dev`), then run the command:
 
 `./node_modules/.bin/electron-rebuild` on Unix/Linux based systems or `.\node_modules\.bin\electron-rebuild.cmd` if you're on Windows to fix this issue.
 
