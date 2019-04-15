@@ -479,7 +479,7 @@ A lot is going on in this file, so let's take some time to break it down.
 
 First, variables are defined to hold the environment variables in the `env.json` file, then another variable is defined to hold the identifier for the keychain service: `my-todo-app` (this value is to be unique for every application) and then another defined to get the `keytar` account.
 
-Next, more variables are defined to hold the access token gotten from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
+Next, more variables are defined to hold the access token received from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
 
 The following functions are then defined
 
