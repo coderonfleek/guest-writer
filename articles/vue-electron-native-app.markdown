@@ -201,7 +201,7 @@ Below is a summary of the steps you will be taking to achieve that:
 
 ### Create the Auth0 API
 
-Navigate to [Auth0 Website](https://auth0.com) and register a new account or sign into an already existing one.
+Navigate to the [Auth0 Website](https://auth0.com) and register a new account or sign into an already existing one.
 
 Click on **APIs** on the left side menu. On the APIs page, click on **CREATE API** and enter details to register a new Auth0 API as shown below:
 
