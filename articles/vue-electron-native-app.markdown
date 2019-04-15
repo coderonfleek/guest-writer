@@ -485,7 +485,7 @@ The following functions are then defined
 
 1. `getAccessToken`: returns the access token from Auth0 after a successful authentication
 2. `getProfile`: returns the profile of the logged in user
-3. `getAuthenticationURL` : constructs and returns an Auth0 authentication page URL.
+3. `getAuthenticationURL`: constructs and returns an Auth0 authentication page URL.
 4. `refreshTokens`: This method gets the refresh token saved in our keychain and uses it to fetch a new access token from Auth0's API. It then returns a promise that resolves with the new access token.
 5. `loadTokens`: This method takes the callback URL from Auth0 after successful authentication and gets the **authorization code** from the callback URL query string. It then uses this code to call the Auth0 API to get the access token, user profile and refresh token. The access token and profile are saved in variables while the refresh token is saved in the keychain.
 6. `logout`: This method deletes the refresh token from the keychain and sets the profile, access token and refresh token variables to `null`.
