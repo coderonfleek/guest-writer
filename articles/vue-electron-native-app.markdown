@@ -207,7 +207,7 @@ Below is a summary of the steps you will be taking to achieve that:
 
 ### Create the Auth0 API
 
-Navigate to [Auth0 Website](https://auth0.com) and register a new account or sign into an already existing one.
+Navigate to the [Auth0 Website](https://auth0.com) and register a new account or sign into an already existing one.
 
 Click on **APIs** on the left side menu. On the APIs page, click on **CREATE API** and enter details to register a new Auth0 API as shown below:
 
@@ -485,13 +485,13 @@ A lot is going on in this file, so let's take some time to break it down.
 
 First, variables are defined to hold the environment variables in the `env.json` file, then another variable is defined to hold the identifier for the keychain service: `my-todo-app` (this value is to be unique for every application) and then another defined to get the `keytar` account.
 
-Next, more variables are defined to hold the access token gotten from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
+Next, more variables are defined to hold the access token received from Auth0, the profile of the logged in user and the refresh token that helps us get a new access token after the current access token has expired.
 
 The following functions are then defined
 
 1. `getAccessToken`: returns the access token from Auth0 after a successful authentication
 2. `getProfile`: returns the profile of the logged in user
-3. `getAuthenticationURL` : constructs and returns an Auth0 authentication page URL.
+3. `getAuthenticationURL`: constructs and returns an Auth0 authentication page URL.
 4. `refreshTokens`: This method gets the refresh token saved in our keychain and uses it to fetch a new access token from Auth0's API. It then returns a promise that resolves with the new access token.
 5. `loadTokens`: This method takes the callback URL from Auth0 after successful authentication and gets the **authorization code** from the callback URL query string. It then uses this code to call the Auth0 API to get the access token, user profile and refresh token. The access token and profile are saved in variables while the refresh token is saved in the keychain.
 6. `logout`: This method deletes the refresh token from the keychain and sets the profile, access token and refresh token variables to `null`.
@@ -588,7 +588,9 @@ export default createAuthWindow;
 
 This module brings in the two modules earlier created and exports a function that handles the authentication process.
 
-This module contains two methods, one to create the authentication window and another to destroy it.
+This module contains two methods: 
+1.`createAuthWindow()` - creates the authentication window 
+2. `destroyAuthWindow()` - destroys the authentication window
 
 The `createAuthWindow` starts by destroying any existing authentication window and goes ahead to create an authentication window by loading the Auth0 authentication URL from the `auth-service.js` module. It then calls the `onBeforeRequest` method of the `webRequest` property of ElectronJS `Session` class to call the `loadTokens` method which takes in the callback URL from Auth0's authentication process.
 
