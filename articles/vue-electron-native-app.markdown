@@ -582,7 +582,9 @@ export default createAuthWindow;
 
 This module brings in the two modules earlier created and exports a function that handles the authentication process.
 
-This module contains two methods, one to create the authentication window and another to destroy it.
+This module contains two methods: 
+1.`createAuthWindow()` - creates the authentication window 
+2. `destroyAuthWindow()` - destroys the authentication window
 
 The `createAuthWindow` starts by destroying any existing authentication window and goes ahead to create an authentication window by loading the Auth0 authentication URL from the `auth-service.js` module. It then calls the `onBeforeRequest` method of the `webRequest` property of ElectronJS `Session` class to call the `loadTokens` method which takes in the callback URL from Auth0's authentication process.
 
