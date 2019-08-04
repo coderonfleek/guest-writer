@@ -24,13 +24,13 @@ related:
 
 ## What You Will Build
 
-You will be building a To-Do List desktop application using Vue and ElectronJS. This application will require users to sign in to the application. The application will then make an authenticated call to fetch a list of To-Dos from a secured backend API. Users will also be able to sign out of this application.
+You will be building a "to do list" desktop application using Vue and ElectronJS. This application will require users to sign in to the application. The application will then make an authenticated call to fetch a list of to dos from a secured backend API. Users will also be able to sign out of this application.
 
 ### Cloning and Running the API
 
 To get a backend API up and running, you will be cloning a simple API built with node [from this repo](https://github.com/coderonfleek/simple-node-api). After cloning the project, simply run `npm install` to install the required packages. Then run `node server` to get the server up and running.
 
-Your backend API simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of To-Dos. The project contains 3 main files:
+Your backend API simply exposes an endpoint `http://localhost:1337/todos` which returns a collection of to dos. The project contains 3 main files:
 
 1. `server.js`: This is the entry point to the application
 2. `todos.js`: This is a module that simply returns an array of To-Do objects
@@ -50,13 +50,19 @@ vue init simulatedgreg/electron-vue my-desktop-app
 
 Where `my-desktop-app` is the name you want to give to your project hence you can replace this with any name of your choosing.
 
-Running this command will take you through an interactive installation process. When asked the following:
+Running this command will take you through an interactive installation process. These will proceed to ask you a set of questions, below are the questions and corresponding answers you should provide for this practise:
 
-- Use linting with ESLint?
-- Set up unit testing with Karma + Mocha?
-- Set up end-to-end testing with Spectron + Mocha?
+- Application Name (`my-desktop-app`)
+- Application Id (**Hit Enter key to accept the default**)
+- Application Version (**Hit Enter key to accept the default**)
+- Project description (**Hit Enter key to accept the default**)
+- Use Sass / Scss? (`n`)
+- Select which Vue plugins to install (**All are selected by default, hit Enter to agree to this**)
+- Use linting with ESLint? (`Y` : Yes, we will be using ESLint to ensure code quality. Hit enter to also accept the **Standard** version)
+- Set up unit testing with Karma + Mocha? (`n`) 
+- Set up end-to-end testing with Spectron + Mocha? (`n`)
+- What build tool would you like to use? (`electron-builder`)
 
-Simply type in `n` for all three questions. We will not be writing tests in this exercise,. When asked the question, "What build tool would you like to use?", choose the `electron-builder` option. You can accept the defaults for the remaining questions by hitting the return key.
 
 After responding to all the questions in the installation process a new `electron-vue` project is scaffolded for you. Go into your new project by running `cd my-desktop-app`.
 
@@ -72,9 +78,9 @@ You should have a screen similar to the one below.
 
 The developer tools panel is open by default because the application is currently being run in development mode.
 
-### Creating a To-Do List Route
+### Creating a to do list Route
 
-Your next task is to create a page for the To-Do list, preferably you would want to make this the first page of the application. Routes in `electron-vue` projects are defined in the `src/renderer/router/index.js` file while components are located in the `src/renderer/components` directory. Go into the `index.js` routes file and replace the contents in the file with the one below:
+Your next task is to create a page for the to do list, preferably you would want to make this the first page of the application. Routes in `electron-vue` projects are defined in the `src/renderer/router/index.js` file while components are located in the `src/renderer/components` directory. Go into the `index.js` routes file and replace the contents in the file with the one below:
 
 ```javascript
 import Vue from "vue";
@@ -103,7 +109,7 @@ So the next step is to create this component and see the landing page display it
 
 Go into the `components` folder and delete everything inside it. Then create a new file named `ToDos.vue` and paste the content below in it:
 
-```javascript
+```html
 <template>
   <div>
     <h2>Welcome to the To-Dos Page</h2>
@@ -117,9 +123,9 @@ Now, when you view your application you should see the screen below. The screen 
 
 ### Consuming the API
 
-Time to get your To-Dos into your application.
+Time to get your to dos into your application.
 
-To do this, you would fetch the collection of To-Dos from the backend API (ensure that this is running) and display it in a list on the landing page.
+To do this, you would fetch the collection of to dos from the backend API (ensure that this is running) and display it in a list on the landing page.
 
 Thus replace the code in `ToDos.vue` with the one below:
 
@@ -174,9 +180,9 @@ export default {
 
 ```
 
-In the code above, you will create a `data` property called `todos` to hold the To-Dos collection, then create a method called `fetchTodos` to call the backend endpoint and load the To-Do collection into the `todos` data property.
+In the code above, you will create a `data` property called `todos` to hold the to dos collection, then create a method called `fetchTodos` to call the backend endpoint and load the To-Do collection into the `todos` data property.
 
-In the template, you will create a button that calls the `fetchTodos` method when clicked and a list that displays the To-Dos on the page.
+In the template, you will create a button that calls the `fetchTodos` method when clicked and a list that displays the to dos on the page.
 
 After making this change you should have a screen similar to the one below when you click the `Fetch Todos` button.
 
@@ -207,13 +213,13 @@ Below is a summary of the steps you will be taking to achieve that:
 
 ### Create the Auth0 API
 
-Navigate to the [Auth0 Website](https://auth0.com) and register a new account or sign into an already existing one.
+Navigate to the [Auth0 Website](https://auth0.com) and sign up for a new account or log into an already existing one.
 
 Click on **APIs** on the left side menu. On the APIs page, click on **CREATE API** and enter details to register a new Auth0 API as shown below:
 
 ![Create Auth0 API](images/create-auth0-api.png)
 
-In the **Name** field, simply enter any descriptive name for your API. In the **Identifier** field, enter a URL for your API, this doesn't have to be an existing or publicly available URL, it only serves as an identifier for your API. Leave the default **RS256** as the Signing algorithm.
+In the **Name** field, simply enter any descriptive name for your API. In the **Identifier** field, enter a URL for your API, this doesn't have to be an existing or publicly available URL, it only serves as an identifier for your API. Leave the default **RS256** as the Signing Algorithm.
 
 Click the **Create** button and your Auth0 API is all set.
 
@@ -309,13 +315,15 @@ Click on the **Settings** tab and scroll down to the _Allowed Callback URLs_ and
 
 ### Securing the Vue and ElectronJS Apps with Auth0
 
-Now back to the ElectronJS desktop application. What is to be achieved here is to present a Sign In screen for users to log in to access the application before the To-Dos homepage is then presented upon successful login.
+Now back to the ElectronJS desktop application. What is to be achieved here is to present a Sign In screen for users to log in to access the application before the to dos homepage is then presented upon successful login.
 
 To do this, some packages need to be installed in your ElectronJS app. First is `jwt-decode` to help decode JSON Web Tokens, `request` library to make API calls in ElectronJS main process and `keytar` which is a native Node module to get, add, replace, and delete passwords in the system's keychain, then add **Bootstrap** for some basic styling.
 
 Install these packages with the following command:
 
-`npm install jwt-decode request keytar bootstrap --save`
+```
+npm install jwt-decode request keytar bootstrap --save
+```
 
 **Note:** After installing `keytar` any subsequent running of the `npm install` or `npm run dev` commands might result in a versioning error between your keytar installation and Nodejs version. To fix this, install the `electron-rebuild` package as a development dependency (`npm install electron-rebuild --save-dev`), then run the command:
 
@@ -323,7 +331,7 @@ Install these packages with the following command:
 
 Next step is to create an `env.json` file to hold your Auth0 credentials for the client, create this file in the root of your `electron-vue` project.
 
-```javascript
+```json
 
 {
   "apiIdentifier": "YOUR_AUTH0_API_IDENTIFIER",
@@ -356,8 +364,6 @@ const keytar = require("keytar");
 const os = require("os");
 
 const { apiIdentifier, auth0Domain, clientId } = envVariables;
-
-console.log(clientId);
 
 const redirectUri = `file:///callback`;
 
@@ -659,7 +665,7 @@ If you do not see this screen or get an error, simply trace your steps back alon
 
 If you get the versioning error between your `keytar` and Nodejs version, apply the fix stated at the start of this section after installing the required packages.
 
-Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (The To-Dos API) which is now protected.
+Now to the final piece of the application. You will now write your frontend to make authenticated calls to the backend API (The to dos API) which is now protected.
 
 You will also be adding some little styling with bootstrap.
 
@@ -756,7 +762,7 @@ Some bootstrap classes and layout structure were also added to give the page a s
 
 A **Log Out** functionality has also been added to the application.
 
-Now run this application again using `npm run dev`. This time you should be able to log in successfully and fetch the To-Dos list from the backend (If your keychain tool prompts you to allow the application to access the keychain, simply click **Allow** or **Always Allow**).
+Now run this application again using `npm run dev`. This time you should be able to log in successfully and fetch the to dos list from the backend (If your keychain tool prompts you to allow the application to access the keychain, simply click **Allow** or **Always Allow**).
 
 Your screen should then look like the one below:
 
