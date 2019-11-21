@@ -22,8 +22,8 @@ The game would operate as follows:
 
 1. User has to sign in to play
 2. User would select a camera feed from a dropdown that displays all available camera feeds on the system
-3. User clicks "Play" to start a new game, an emoji will be displayed to the user to scan a matching object
-4. Use scans object and clicks on "Predict" for Google's Vision API to return results to check for a match
+3. User clicks **Play** to start a new game, an emoji will be displayed to the user to scan a matching object
+4. User scans object and clicks on **Predict** for Google's Vision API to return results to check for a match
 5. User must scan an object before a 60 seconds timer runs out.
 6. User gets 10 points for a correct match and looses 5 points for a wrong one
 7. User can skip an emoji for another one to be displayed within the 60 seconds window.
@@ -42,11 +42,49 @@ In order to follow along with this article, a few things are required:
 
 ### Creating the Project
 
-The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) project
+The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) (GCP for short) project. To do that, simply go to the [GCP Console](https://console.cloud.google.com), this would require you to sign in with your Google account if you aren't already signed in.
+
+Once signed in, you would see the GCP dashboard. To create a new project, click on the project dropdown at the left hand side of the blue top toolbar.
+
+![Project Dropdown - Google Cloud Platform](images/project-dropdown.png "Project Dropdown - Google Cloud Platform")
+
+This pops up a modal with a list of all your projects (empty if you are yet to create a project).
+
+On the modal, click on the **New Project** button at the top right hand corner.
+
+![Project Dialog](images/new-project.png "Create New Project - Google Cloud Platform")
+
+This automatically redirects you to the project creation page where you can enter your preferred project name as shown below:
+
+![Project Form](images/project-form.png "Project creation page - Google Cloud Platform")
+
+After entering your project name, leave the **Location** as _No Organization_ and click the **Create** button.
+
+The system automatically sets up the project and notifies you when its done. It also selects the project as the current project in the project dropdown on the top blue toolbar. If your new project is not automatically selected, you can click the project dropdown and select the project in the project list displayed in the modal.
 
 ### Enabling the Cloud Vision API
 
+In order to be able to use GCP's Vision API, you need to enable the API for your project. With your project selected on the project dropdown, click **Dashboard** on the sidemenu. Then just below the top blue toolbar, click on the **Enable APIs and Services** button, this will then redirect you to the API library page which shows a list of all available APIs.
+
+In the search box, type in _Vision API_ in order to filter the list. You should now see the **Cloud Vision API** as shown below:
+
+![Cloud Vision API](images/cloud-vision-api.png "Cloud Vision API - Google Cloud Platform")
+
+Click on it to select it. You will now be redirected to the **Cloud Vision API** page that gives an overview of what the API is all about.
+
+Click on the blue **Enable** button to enable this API for your project.
+
+![Enable Cloud Vision API](images/enable-cloud-vision.png "Cloud Vision API - Google Cloud Platform")
+
 ### Getting an API Key
+
+When calling the Google Cloud Vision API from your application, you need to authenticate your requests using an API key.
+
+To get an API key, simply navigate to the [Credentials page](https://console.cloud.google.com/apis/credentials). Do ensure that your project is selected on the project dropdown at the top.
+
+Click on the **Create credentials** dropdown and select **API key** from the list of options. The system automatically generates an API key for you and displays it in a dialog. Copy this key and close the dialog box. You will be needing this key later in the project.
+
+**Please Note:** Google requires that you have a billing account setup for your GCP account in order to continue using the API once your free limit is exceeded. You can setup a billing account [here](https://console.cloud.google.com/billing). You can find out more about [Pricing](https://cloud.google.com/vision/pricing) and [Quotas](https://cloud.google.com/vision/quotas) on the GCP website.
 
 ## Creating the Auth0 Project
 
