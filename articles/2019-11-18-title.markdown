@@ -86,13 +86,52 @@ Click on the **Create credentials** dropdown and select **API key** from the lis
 
 **Please Note:** Google requires that you have a billing account setup for your GCP account in order to continue using the API once your free limit is exceeded. You can setup a billing account [here](https://console.cloud.google.com/billing). You can find out more about [Pricing](https://cloud.google.com/vision/pricing) and [Quotas](https://cloud.google.com/vision/quotas) on the GCP website.
 
-## Creating the Auth0 Project
+## Creating the Auth0 Application
+
+Next up, we will be creating our Auth0 application to handle authentication in our application, so head to [Auth0](https://auth0.com)'s website and click the **Log in** button to sign into the console.
+
+Once logged in, click on **Applications** on the left hand side menu. On the **Applications** page, click on the big orange **CREATE APPLICATION** button.
+
+![Create Auth0 Application](images/create-app-btn.png "Create Application - Auth0 Console")
+
+On the **Create Application** dialog that pops up, enter an appropriate name for yout application and select **Single Page Web Applications** from the options below the application name field.
+
+Now click the **Create** button to complete the process.
+
+After successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vue application we would be creating later on.
+
+Once you're done entering these values, scroll down and hit the **SAVE CHANGES** button.
 
 ## Scaffolding the Vue project
 
+Create a new Vue application by running the following command in the folder where you want your application to be located.
+
+`vue create my-emoji-game`
+
+When the **Please pick a preset?** prompt comes up in the interactive CLI, select _default_.
+
+After your selection, the Vue CLI begins scaffolding your new Vue application.
+
 ## Setting up Authentication with Auth0
 
+We are going to be setting up authentication with Auth0 in our Vue application based on the instructions from [Auth0's documentation](https://auth0.com/docs/quickstart/spa/vuejs/01-login).
+
 ### The authentication service
+
+The first thing you need to do is to write an authentication service. For this you first need to install the `@auth0/auth0-spa-js`. So, at the root of your Vue application, run the following command:
+
+`npm install @auth0/auth0-spa-js`
+
+Once the installation is complete, the next thing you are to do is to create the authentication service. Within the authentication service, you will need your Auth0 domain and application id. In order to separate these details from your service code, create a new file named `auth_config.json` at the root of your project and past the following snippet inside:
+
+```json
+{
+  "domain": "YOUR_AUTH0_DOMAIN",
+  "clientId": "YOUR_APP_ID"
+}
+```
+
+Ensure to replace the placeholders `YOUR_AUTH0_DOMAIN` and `YOUR_APP_ID` with the appropriate values. You can find your client id on your application page and your Auth0 domain is in the form [YOUR_USERNAME].auth0.com e.g. user1.auth0.com.
 
 ### Adding a router
 
