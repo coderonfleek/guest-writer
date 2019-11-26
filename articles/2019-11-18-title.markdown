@@ -178,8 +178,6 @@ export const useAuth0 = ({
         try {
           await this.auth0Client.loginWithPopup(o);
         } catch (e) {
-          // eslint-disable-next-line
-          console.error(e);
         } finally {
           this.popupOpen = false;
         }
@@ -341,12 +339,14 @@ Now to the main action, this is where you tie everything together. You will be w
 
 1. Load and display in a select list the camera input options available on the system
 2. Display the feed of the currently selected camera input
-3. Display an object Emoji (no smileys)
-4. Create a countdown timer.
-5. Make a request with the captured image to Google's Vision API
-6. Display the current score
-7. Display the User's details
-8. Display pop dialogs for notifications.
+3. A **Play** button to initiate a new game
+4. A "Skip Emoji" button to move to a different emoji is the player can't predict the current one
+5. Display an object Emoji (no smileys)
+6. Create a countdown timer.
+7. Make a request with the captured image to Google's Vision API
+8. Display the current score
+9. Display the User's details
+10. Display pop dialogs for notifications.
 
 Phew! That's a handful isn't it. But don't worry, you will be done in no time.
 
@@ -354,12 +354,711 @@ Phew! That's a handful isn't it. But don't worry, you will be done in no time.
 
 The first step to building the game is to install the packages that will be required. You need to install the following packages:
 
-1. axios : API requests
-2. bootstrap : Styling
-3. emoji.json : Emojis
+1. axios : To make API requests to the Google Vision API
+2. bootstrap : Basic styling
+3. emoji.json : Emojis Library
+
+Go ahead and install these by running the following command:
+
+`npm install axios bootstrap emoji.json`
+
+### The **Modal** component
+
+Before proceeding to build the game page, a modal component is required to display notifications on the game page. So, go into the `src/components` folder and delete the `HelloWorld.vue` file that is comes by default with the scaffolded project and create a new file named `modal.vue` pasting the following code in it:
+
+```javascript
+<template>
+  <transition name="modal">
+    <div class="modal-mask">
+      <div class="modal-wrapper">
+        <div class="modal-container">
+          <div class="modal-header">{{header}}</div>
+
+          <div class="modal-body">{{content}}</div>
+
+          <div class="modal-footer">
+            <button class="modal-default-button" @click="$emit('close')">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  props: ["header", "content"]
+};
+</script>
+
+<style scoped>
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity 0.3s ease;
+}
+
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.modal-container {
+  width: 600px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  transition: all 0.3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-default-button {
+  float: right;
+}
+
+
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-leave-active {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+</style>
+
+```
+
+This file exports a simple modal component that takes in the modal title (`header`) and modal body (`content`) as props.
 
 ### Building the game page
 
-### Adding authentication to the game page
+Now to the main action, the page that ties everything together into simple emoji predicting game using the full power of Google's machine learning API for vision.
+
+Go into the `src` folder and replace everything in the `App.vue` file with the code below:
+
+```javascript
+
+<template>
+  <div id="app" v-if="!$auth.loading">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">The Emoji Game</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarText"
+        aria-controls="navbarText"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <div class="navbar-nav mr-auto user-details">
+          <span v-if="$auth.isAuthenticated">{{ $auth.user.name }} ({{ $auth.user.email }})</span>
+          <span v-else>&nbsp;</span>
+        </div>
+
+        <span class="navbar-text">
+          <ul class="navbar-nav float-right">
+            <li class="nav-item" v-if="!$auth.isAuthenticated">
+              <a class="nav-link" href="#" @click="login()">Log In</a>
+            </li>
+            <li class="nav-item" v-if="$auth.isAuthenticated">
+              <a class="nav-link" href="#" @click="logout()">Log Out</a>
+            </li>
+          </ul>
+        </span>
+      </div>
+    </nav>
+
+    <section class="container mt-5" v-if="!$auth.isAuthenticated">
+      <div class="row">
+        <div class="col-md-8 offset-md-2">
+          <div class="jumbotron">
+            <h1 class="display-4">Play the Emoji Game!</h1>
+            <p class="lead">Instructions</p>
+            <ul>
+              <li>Login to play</li>
+              <li>Select a camera feed of your choice from the drop down</li>
+              <li>Click “Play” to start a new round</li>
+              <li>Capture the correct image that matches the emoji displayed</li>
+              <li>You can skip an emoji during a round if you can’t find the corresponding object around you to capture</li>
+              <li>Click ‘Predict Image’ to compare your captured image against the emoji</li>
+              <li>You gain 10 points for a correct prediction and loose 5 points for a wrong prediction</li>
+              <li>If the clock runs out, its Game Over!</li>
+            </ul>
+            <a
+              class="btn btn-primary btn-lg mr-auto ml-auto"
+              href="#"
+              role="button"
+              @click="login()"
+            >Log In to Play</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The emoji game -->
+    <section class="container mt-5" v-else>
+      <div class="row">
+        <div class="col-md-4">
+          <select class="form-control" v-model="selectedSource" @change="getStream()">
+            <option
+              v-for="source in videoSources"
+              :key="source.id"
+              :value="source.id"
+            >{{source.text}}</option>
+          </select>
+        </div>
+        <div class="col-md-8">
+          <div class="row">
+            <div class="col-md-4">Countdown : {{timerStart}}</div>
+            <div class="col-md-4">Total Score: {{totalScore}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-5" v-if="gameOver">
+        <button class="btn btn-primary" @click="startNewGame()">Start New Game</button>
+      </div>
+
+      <div class="row mt-5" v-else>
+        <div class="col-md-6">
+          <button class="btn btn-success" :disabled="inPlay" @click="playGame()">Play</button>
+          &nbsp;
+          <button
+            class="btn btn-warning"
+            :disabled="!inPlay"
+            @click="skipEmoji()"
+          >Skip Emoji</button>
+        </div>
+      </div>
+      <!-- row -->
+      <div class="row mt-5">
+        <div class="col-md-6">
+          <div>
+            <video autoplay id="video1" ref="video1"></video>
+            <canvas style="display:none;" id="canvas1" ref="canvas1"></canvas>
+          </div>
+
+          <div>
+            <button class="btn btn-primary" @click="captureImage()">Capture Image</button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-6">
+              <img
+                id="usercapture"
+                ref="usercapture"
+                src="http://via.placeholder.com/150x150"
+                width="200"
+                height="200"
+              />
+
+              <div class="mt-2">
+                <button
+                  class="btn btn-success"
+                  @click="predictImage()"
+                  :disabled="predictingImage"
+                >{{predictingImage? 'Please Wait...' : 'Predict Image'}}</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <p class="currentEmoji">{{currentEmoji.char}}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modal -->
+
+      <modal
+        v-if="modal.show"
+        @close="modal.show = false"
+        :header="modal.header"
+        :content="modal.content"
+      ></modal>
+    </div>
+  </div>
+</template>
+
+<script>
+import "bootstrap/dist/css/bootstrap.css";
+import axios from "axios";
+import emojis from "emoji.json";
+import modal from "./components/modal";
+
+export default {
+  name: "app",
+  data() {
+    return {
+      videoSources: [],
+      selectedSource: null,
+      totalScore: 0,
+      currentEmoji: {},
+      imageURL: null,
+      predictingImage: false,
+      gCloudVisionUrl:
+        "https://vision.googleapis.com/v1/images:annotate?key=YOUR_GOOGLE_PROJECT_API_KEY",
+      timerHandle: null,
+      timerStart: 60,
+      pointsIncrement: 10,
+      pointsDecrement: 5,
+      inPlay: false,
+      gameOver: false,
+      modal: {
+        show: false,
+        header: "My header",
+        content: "My Content"
+      }
+    };
+  },
+  components: {
+    modal
+  },
+  mounted() {
+
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(this.gotDevices)
+      .catch(this.handleError);
+  },
+  computed: {
+    gameEmojis() {
+      return emojis.filter(emoji => {
+        return (
+          emoji.category.includes("Objects") &&
+          emoji.char.charCodeAt(0) != 55358
+        );
+      });
+    }
+  },
+  methods: {
+    // Log the user in
+    login() {
+      this.$auth.loginWithRedirect();
+    },
+    // Log the user out
+    logout() {
+      this.$auth.logout({
+        returnTo: window.location.origin
+      });
+    },
+    gotDevices(deviceInfos) {
+      for (var i = 0; i !== deviceInfos.length; ++i) {
+        var deviceInfo = deviceInfos[i];
+
+        if (deviceInfo.kind === "videoinput") {
+          let option = {};
+
+          option.id = deviceInfo.deviceId;
+          option.text = deviceInfo.label || "camera " + (i - 1);
+
+          this.videoSources.push(option);
+        }
+      }
+
+    },
+    getStream() {
+      if (window.stream) {
+        window.stream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+      }
+      var constraints = {
+        video: {
+          deviceId: { exact: this.selectedSource }
+        }
+      };
+
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(this.gotStream)
+        .catch(this.handleError);
+    },
+    gotStream(stream) {
+
+      this.$refs.video1.srcObject = stream;
+    },
+    handleError(error) {
+      this.showModal(
+          "Error",
+          error.message
+      );
+    },
+    playGame() {
+      //Get Random Emoji
+      this.switchEmoji();
+
+      this.inPlay = true;
+
+      //Start timer countdown
+      this.setTimer();
+    },
+    skipEmoji() {
+      this.switchEmoji();
+
+      this.imageURL = null;
+    },
+    captureImage() {
+      let canvas = this.$refs.canvas1;
+      let videoElement = this.$refs.video1;
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+      canvas.getContext("2d").drawImage(videoElement, 0, 0);
+
+      let imgElement = this.$refs.usercapture;
+
+      // Get image
+      let image = canvas.toDataURL("image/png");
+
+
+      //Trim signature to get pure image data
+      this.imageURL = image.replace(/^data:image\/(png|jpg);base64,/, "");
+
+      //Set the image element to the data url
+      imgElement.src = image;
+    },
+    async predictImage() {
+      if (this.imageURL) {
+        let requestBody = {
+          requests: [
+            {
+              image: {
+                content: this.imageURL
+              },
+              features: [
+                {
+                  type: "LABEL_DETECTION",
+                  maxResults: 10
+                }
+              ]
+            }
+          ]
+        };
+        try {
+          this.predictingImage = true;
+
+          let predictionResults = await axios.post(
+            this.gCloudVisionUrl,
+            requestBody
+          );
+
+          let predictionResponse = predictionResults.data.responses[0];
+
+          let annotations = predictionResponse.labelAnnotations;
+
+          let allLabelDescriptions = annotations.map(annotation =>
+            annotation.description.toLowerCase()
+          );
+
+
+
+          //Check if any of the prediction labels match the current emoji
+
+          let match = false;
+
+          allLabelDescriptions.forEach(description => {
+            if (this.currentEmoji.name.includes(description)) {
+              match = true;
+            }
+          });
+
+
+
+          if (match == true) {
+            this.totalScore += this.pointsIncrement;
+
+            this.resetTimer();
+
+            this.showModal(
+              "Correct Answer",
+              `Congratulations, you have gained ${this.pointsIncrement} points, your total is now ${this.totalScore}`
+            );
+          } else {
+            this.totalScore -= this.pointsDecrement;
+
+            this.showModal(
+              "Wrong Answer",
+              `The answer you gave was incorrect, Your captured image suggested the following (${allLabelDescriptions}). You have lost ${this.pointsDecrement} points, your total is now ${this.totalScore}`
+            );
+          }
+
+          this.predictingImage = false;
+        } catch (error) {
+          this.handleError(error);
+        }
+      } else {
+        this.showModal("Error", `You are yet to capture an image`);
+      }
+    },
+    switchEmoji() {
+      let emojiIndex = this.getRandomInt(0, this.gameEmojis.length);
+      this.currentEmoji = this.gameEmojis[emojiIndex];
+
+    },
+    setTimer() {
+      this.resetTimer();
+      this.timerHandle = setInterval(() => {
+        if (this.timerStart > 0) {
+          this.timerStart -= 1;
+        } else {
+          //Game Over
+          this.endGame();
+        }
+      }, 1000);
+    },
+    resetTimer() {
+      //Stop the Clock
+      clearInterval(this.timerHandle);
+      this.timerStart = 60;
+    },
+    endGame() {
+      clearInterval(this.timerHandle);
+
+      this.inPlay = false;
+      this.gameOver = true;
+
+      this.showModal(
+        "Game Over",
+        `You could not complete the task before the time ran out. Your total score is ${this.totalScore}`
+      );
+    },
+    startNewGame() {
+      this.imageURL = null;
+      this.totalScore = 0;
+      this.gameOver = false;
+      this.currentEmoji = {};
+    },
+    showModal(title, body) {
+      this.modal = {
+        show: true,
+        header: title,
+        content: body
+      };
+    },
+    getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+  }
+};
+</script>
+
+<style scoped>
+#video1 {
+  width: 500px;
+  height: 400px;
+  background-color: grey;
+}
+
+.currentEmoji {
+  font-size: 120px;
+}
+
+.user-details {
+  color: white;
+}
+</style>
+
+
+```
+
+Now that was a lot of code, let's break it down starting with the Vue instance.
+
+The `data` obejct is defined with the necessary variables to be used in the application. Note the `gCloudVisionUrl`
+
+```javascript
+
+data() {
+    return {
+      videoSources: [],
+      selectedSource: null,
+      totalScore: 0,
+      currentEmoji: {},
+      imageURL: null,
+      predictingImage: false,
+      gCloudVisionUrl:
+        "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCk-S9i5xMbmiEAIVPtSC8VlyecH1rY8Uo",
+      timerHandle: null,
+      timerStart: 60,
+      pointsIncrement: 10,
+      pointsDecrement: 5,
+      inPlay: false,
+      gameOver: false,
+      modal: {
+        show: false,
+        header: "My header",
+        content: "My Content"
+      }
+    };
+  },
+
+```
+
+Note the line:
+
+`gCloudVisionUrl: "https://vision.googleapis.com/v1/images:annotate?key=YOUR_GOOGLE_PROJECT_API_KEY",`
+
+Replace `YOUR_GOOGLE_PROJECT_API_KEY` with the API key generated from the Google project created earlier.
+
+Next, in the `mounted` lifecycle hook, the `navigator` object is used to get all media device inputs in the system.
+
+```javascript
+mounted() {
+
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(this.gotDevices)
+      .catch(this.handleError);
+}
+
+```
+
+In order to use only object emojis (emojis representing objects and not smileys), a computed property `gameEmojis` is created.
+
+```javascript
+
+gameEmojis() {
+  return emojis.filter(emoji => {
+    return (
+      emoji.category.includes("Objects") &&
+      emoji.char.charCodeAt(0) != 55358
+    );
+  });
+}
+```
+
+Now to the methods
+
+### `login` and `logout`
+
+The `login` and `logout` methods make use of the authentication service created earlier to log the user in and out of the application respectively.
+
+```javascript
+login() {
+  this.$auth.loginWithRedirect();
+},
+logout() {
+  this.$auth.logout({
+    returnTo: window.location.origin
+  });
+},
+
+```
+
+### The media stream functions
+
+The `gotDevices`, `getStream` and `gotStream` functions are responsibile for handling the collation of video sources and display of the selected video source feed in an html video tag for the user to capture.
+
+```javascript
+gotDevices(deviceInfos) {
+  for (var i = 0; i !== deviceInfos.length; ++i) {
+    var deviceInfo = deviceInfos[i];
+
+    if (deviceInfo.kind === "videoinput") {
+      let option = {};
+
+      option.id = deviceInfo.deviceId;
+      option.text = deviceInfo.label || "camera " + (i - 1);
+
+      this.videoSources.push(option);
+    }
+  }
+},
+getStream() {
+  if (window.stream) {
+    window.stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+  }
+
+  var constraints = {
+    video: {
+      deviceId: { exact: this.selectedSource }
+    }
+  };
+
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then(this.gotStream)
+    .catch(this.handleError);
+},
+gotStream(stream) {
+  this.$refs.video1.srcObject = stream;
+}
+
+```
+
+### The Game play functions
+
+These are the functions responsible for handing the game playing activities.
+
+1. `playGame`: Resets the game for a user to start a new game.
+2. `skipEmoji` : Skips the currently displayed emoji and shows a new one to predict
+3. `captureImage` : Draws the current frame in the video element unto a canvas element and converts the canvas image to a data url that is then loaded to the screen using an image tag.
+4. `predictImage` : Makes a request to the Google Vision API with the captured image to return prediction results, then tries to find a match between the predicted values and the emoji label. If a match exists, the user scores points, if not, the user looses points.
+5. `switchEmoji` : Changes the currently displayed emoji
+6. `setTimer` : Starts the timer countdown for a game round.
+7. `resetTimer` : Resets the timer back to the starting point
+8. `endGame` : Ends the game
+9. `startNewGame` : Start/Restarts the game
+10. `showModal` : Display the notifications modal
+
+### The game page template
+
+In the game page template, we have a top navigation bar that displays the Log In/Log Out buttons based on the authentication state.
+
+Next, there are two sections, one for the non-authenticated state and the other for the authenticated state. These two sections are displayed conditionally based on the authenticated state.
+
+The non-authenticated section consists of the game homepage listing the game instructions and log in button.
+
+The authenticated section consists of the actual game. A select list of video input sources, a button to start a new game and another button to skip an emoji while in play. Also, there is a video display of the feed of the currently selected video source, a capture button, the button that triggers the prediction, the emoji, score and timer displays.
 
 ## Running the Application
+
+Now its time to put all the work that has been done so far to test. Run the app by running the following command:
+
+`npm run serve`
+
+If all goes smoothly, you should see the login screen as shown below:
+
+![Login Page](images/login-page.png "Login Page - Emoji Game")
+
+Now click the login button. You will see the Auth0 login prompt where you can login with your email or GMail/Facebook account.
+
+Once the login process is complete, you will be redirected back to the app where the game page is then displayed. Select a camera source and hit the **Play** button. You should see a page similar to the one below:
+
+![Game Page](images/game-page.png "Game Page - Emoji Game")
+
+And there you have it, a simple emoji prediction game using Auth0, Vue and the Google Cloud Vision API.
+
+## Conclusion
+
+This is surely not a production-ready application (do not deploy to app stores :)) as it could still use a lot more engineering to make it full-fledged. However, it demonstrates how we can build intelligence into our applications using readily available machine learning APIs.
