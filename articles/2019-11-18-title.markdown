@@ -335,7 +335,26 @@ This file loads in the Auth0 configuration, the `router` and authentication serv
 
 ## Building the Emoji game
 
+Now to the main action, this is where you tie everything together. You will be writing code to do the following:
+
+1. Load and display in a select list the camera input options available on the system
+2. Display the feed of the currently selected camera input
+3. Display an object Emoji (no smileys)
+4. Create a countdown timer.
+5. Make a request with the captured image to Google's Vision API
+6. Display the current score
+7. Display the User's details
+8. Display pop dialogs for notifications.
+
+Phew! That's a handful isn't it. But don't worry, you will be done in no time.
+
 ### Installing required packages
+
+The first step to building the game is to install the packages that will be required. You need to install the following packages:
+
+1. axios : API requests
+2. bootstrap : Styling
+3. emoji.json : Emojis
 
 ### Building the game page
 
