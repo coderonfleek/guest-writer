@@ -333,6 +333,8 @@ new Vue({
 
 This file loads in the Auth0 configuration, the `router` and authentication service plugin. The plugin is set up for use within our application using `Vue.use` with the required parameters, the `router` is also loaded into the root instance of the application.
 
+**Note:** If you run this project at this point (or at any other point in the course of this article) and you run into errors relating to `core-js`, simply run `npm install core-js` to fix the issue.
+
 ## Building the Emoji game
 
 Now to the main action, this is where you tie everything together. You will be writing code to do the following:
