@@ -890,7 +890,7 @@ export default {
 
 ```
 
-Now that was a lot of code, let's break it down starting with the Vue instance.
+That was a lot of code! Let's break it down starting with the Vue instance.
 
 The `data` object is defined with the necessary variables to be used in the application.
 
