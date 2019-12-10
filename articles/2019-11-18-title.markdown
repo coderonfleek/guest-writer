@@ -42,7 +42,7 @@ To follow along with this article, a few things are required:
 
 ### Creating the project
 
-The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) (GCP for short) project. To do that, simply go to the [GCP Console](https://console.cloud.google.com), this would require you to sign in with your Google account if you aren't already signed in.
+The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) (GCP) project. To do that, simply go to the [GCP Console](https://console.cloud.google.com), this would require you to sign in with your Google account if you aren't already signed in.
 
 Once signed in, you would see the GCP dashboard. To create a new project, click on the project dropdown at the left-hand side of the blue top toolbar.
 
