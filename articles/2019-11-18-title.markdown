@@ -22,7 +22,7 @@ The game would operate as follows:
 
 1. User has to sign in to play
 2. The user would select a camera feed from a dropdown that displays all available camera feeds on the system
-3. User clicks **Play** to start a new game, and emoji will be displayed to the user to scan a matching object
+3. User clicks **Play** to start a new game, and an emoji will be displayed to the user to scan a matching object.
 4. The user scans object and clicks on **Predict** for Google's Vision API to return results to check for a match
 5. Users must scan an object before a 60 seconds timer runs out.
 6. The user gets 10 points for a correct match and looses 5 points for a wrong one
