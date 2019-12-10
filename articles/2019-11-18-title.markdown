@@ -1057,7 +1057,7 @@ Once the login process is complete, you will be redirected back to the app where
 
 ![Game Page](images/game-page.png "Game Page - Emoji Game")
 
-And there you have it, a simple emoji prediction game using Auth0, Vue and the Google Cloud Vision API.
+And there you have it, a simple emoji prediction game using Auth0, Vue, and the Google Cloud Vision API.
 
 ## Conclusion
 
