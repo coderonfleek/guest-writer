@@ -40,7 +40,7 @@ To follow along with this article, a few things are required:
 
 ## Creating the Google API Project
 
-### Creating the Project
+### Creating the project
 
 The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) (GCP for short) project. To do that, simply go to the [GCP Console](https://console.cloud.google.com), this would require you to sign in with your Google account if you aren't already signed in.
 
