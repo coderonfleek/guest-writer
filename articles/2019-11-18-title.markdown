@@ -1043,7 +1043,7 @@ The authenticated section consists of the actual game. A select list of video in
 
 ## Running the Application
 
-Now its time to put all the work that has been done so far to test. Run the app by running the following command:
+Now it's time to put all the work that has been done so far to test. Run the app by running the following command:
 
 `npm run serve`
 
