@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Creating an Emoji Game with Vue, Auth0 and Google Vision API"
-description: "Creating an Emoji Game with Vue, Auth0 and Google Vision API"
+description: "Using Google Vision API, we build a game where the user scans an image to match an emoji displayed."
 date: "2019-11-18 08:30"
 author:
   name: "Fikayo Adepoju"
@@ -21,12 +21,12 @@ The application you will be building is a simple emoji game that displays a rand
 The game would operate as follows:
 
 1. User has to sign in to play
-2. The user would select a camera feed from a dropdown that displays all available camera feeds on the system
-3. User clicks **Play** to start a new game, and an emoji will be displayed to the user to scan a matching object.
+2. The user would select a camera feed from a dropdown that displays all available camera feeds on the system. For example, the computer's built-in webcam
+3. User clicks **Play** to start a new game, and an emoji will be displayed to the user to scan a matching object
 4. The user scans object and clicks on **Predict** for Google's Vision API to return results to check for a match
-5. Users must scan an object before the 60 seconds timer runs out.
+5. Users must scan an object before the 60 seconds timer runs out
 6. The user gets 10 points for a correct match and loses 5 points for a wrong one
-7. Users can skip an emoji for another one to be displayed within the 60 seconds window.
+7. Users can skip an emoji for another one to be displayed within the 60 seconds window
 8. If the 60 seconds run out before the user gets a correct prediction, it's Game Over!
 
 ## Prerequisites
@@ -40,7 +40,7 @@ To follow along with this article, a few things are required:
 
 ## Creating the Google API Project
 
-### Creating the project
+### Creating the Project
 
 The first thing you need to have set up is a [Google Cloud Platform](https://cloud.google.com) (GCP) project. To do that, simply go to the [GCP Console](https://console.cloud.google.com), this would require you to sign in with your Google account if you aren't already signed in.
 
@@ -104,7 +104,7 @@ After the successful creation of the application, go to the **Settings** section
 
 Once you're done entering these values, scroll down and hit the **SAVE CHANGES** button.
 
-## Scaffolding the Vue project
+## Scaffolding the Vue Project
 
 Create a new Vue application by running the following command in the folder where you want your application to be located.
 
@@ -118,7 +118,7 @@ After your selection, the Vue CLI begins scaffolding your new Vue application.
 
 You are going to set up authentication with Auth0 in your Vue application based on the instructions from [Auth0's documentation](https://auth0.com/docs/quickstart/spa/vuejs/01-login).
 
-### The authentication service
+### The Authentication Service
 
 The first thing you need to do is to write an authentication service. For this, you first need to install the `@auth0/auth0-spa-js`. So, at the root of your Vue application, run the following command:
 
@@ -134,6 +134,8 @@ Once the installation is complete, the next thing you are to do is to create the
 ```
 
 Ensure to replace the placeholders `YOUR_AUTH0_DOMAIN` and `YOUR_APP_ID` with the appropriate values. You can find your client id on your application page and your Auth0 domain is in the form [YOUR_USERNAME].auth0.com e.g. user1.auth0.com.
+
+Make sure you ignore this file in your `.gitignore` file to ensure that your sensitive credentials are not pushed to a public repository.
 
 Now to create the authentication service, inside the `src` folder, created a folder named `auth` and inside this folder create a file named `index.js` and paste the code below:
 
@@ -231,7 +233,7 @@ export const useAuth0 = ({
       });
 
       try {
-        // If the user is returning to the app after authentication..
+        // If the user is returning to the app after authentication
         if (
           window.location.search.includes("code=") &&
           window.location.search.includes("state=")
@@ -267,7 +269,7 @@ export const Auth0Plugin = {
 
 This service creates a wrapper object around the Auth0 SDK and implements a Vue plugin that exposes this wrapper object to the rest of the application. This wrapper API consists of user authentication methods like `loginWithPopup`, `logout` etc. that you can call within your application.
 
-### Adding a router
+### Adding a Router
 
 To manage redirection during Auth0's authentication process, you need to add a router to the project. For this you will need to install the `vue-router` package by running the following command in the root of your project.
 
@@ -333,24 +335,24 @@ This file loads in the Auth0 configuration, the `router` and authentication serv
 
 **Note:** If you run this project at this point (or at any other point in the course of this article) and you run into errors relating to `core-js`, simply run `npm install core-js` to fix the issue.
 
-## Building the Emoji game
+## Building the Emoji Game
 
 Now to the main action, this is where you tie everything together. You will be writing code to do the following:
 
 1. Load and display in a select list the camera input options available on the system
 2. Display the feed of the selected camera input
 3. A **Play** button to initiate a new game
-4. A "Skip Emoji" button to move to a different emoji is the player can't predict the current one
-5. Display an object Emoji (no smileys)
-6. Create a countdown timer.
+4. A **Skip Emoji** button to move to a different emoji is the player can't predict the current one
+5. Display an object Emoji (no smileys as we don't want to include the prediction of facial expressions)
+6. Create a countdown timer
 7. Make a request with the captured image to Google's Vision API
 8. Display the current score
 9. Display the User's details
-10. Display pop dialogs for notifications.
+10. Display pop dialogs for notifications
 
 Phew! That's a handful, isn't it? But don't worry, you will be done in no time.
 
-### Installing required packages
+### Installing Required Packages
 
 The first step to building the game is to install the packages that will be required. You need to install the following packages:
 
@@ -362,7 +364,7 @@ Go ahead and install these by running the following command:
 
 `npm install axios bootstrap emoji.json`
 
-### The Modal component
+### The Modal Component
 
 Before proceeding to build the game page, a modal component is required to display notifications on the game page. Go into the `src/components` folder and delete the `HelloWorld.vue` file that is comes by default with the scaffolded project and create a new file named `modal.vue` pasting the following code in it:
 
@@ -453,9 +455,9 @@ export default {
 
 This file exports a simple modal component that takes in the modal title (`header`) and modal body (`content`) as props.
 
-### Building the game page
+### Building the Game Page
 
-Now to the main action, the page that ties everything together into simple emoji predicting game using the full power of Google's machine learning API for vision.
+Now to the main action. Using the full power of Google's machine learning API for vision, you will now tie everything together for the game!.
 
 Go into the `src` folder and replace everything in the `App.vue` file with the code below:
 
@@ -973,7 +975,7 @@ logout() {
 
 ```
 
-### The media stream functions
+### The Media Stream Functions
 
 The `gotDevices`, `getStream` and `gotStream` functions are responsible for handling the collation of video sources and display of the selected video source feed in an HTML video tag for the user to capture.
 
@@ -1016,22 +1018,22 @@ gotStream(stream) {
 
 ```
 
-### The Game play functions
+### The Game Play Functions
 
 These are the functions responsible for handing the game playing activities.
 
-1. `playGame`: Resets the game for a user to start a new game.
+1. `playGame`: Resets the game for a user to start a new game
 2. `skipEmoji`: Skips the currently displayed emoji and shows a new one to predict
-3. `captureImage`: Draws the current frame in the video element into a canvas element and converts the canvas image to a data URL that is then loaded to the screen using an image tag.
-4. `predictImage`: Makes a request to the Google Vision API with the captured image to return prediction results, then tries to find a match between the predicted values and the emoji label. If a match exists, the user scores points, if not, the user loses points.
-5. `switchEmoji`: Changes the emoji currently displayed.
-6. `setTimer`: Starts the timer countdown for a game round.
-7. `resetTimer`: Resets the timer back to zero.
+3. `captureImage`: Draws the current frame in the video element into a canvas element and converts the canvas image to a data URL that is then loaded to the screen using an image tag
+4. `predictImage`: Makes a request to the Google Vision API with the captured image to return prediction results, then tries to find a match between the predicted values and the emoji label If a match exists, the user scores points, if not, the user loses points
+5. `switchEmoji`: Changes the emoji currently displayed
+6. `setTimer`: Starts the timer countdown for a game round
+7. `resetTimer`: Resets the timer back to zero
 8. `endGame`: Ends the game
 9. `startNewGame`: Start/Restarts the game
 10. `showModal`: Displays the notifications modal
 
-### The game page template
+### The Game Page Template
 
 In the game page template, a top navigation bar displays the login/logout buttons based on the authentication state.
 
