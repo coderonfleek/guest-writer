@@ -1039,7 +1039,7 @@ Next, there are two sections, one for the non-authenticated state and the other 
 
 The non-authenticated section consists of the game homepage listing the game instructions and login button.
 
-The authenticated section consists of the actual game. A select list of video input sources, a button to start a new game and another button to skip an emoji while in play. Also, there is a video display of the feed of the currently selected video source, a capture button, the button that triggers the prediction, the emoji, score and timer displays.
+The authenticated section consists of the actual game. A select list of video input sources, a button to start a new game and another button to skip an emoji while in play. Also, there is a video display of the feed of the video source selected, a capture button, the button that triggers the prediction, the emoji, score, and timer displays.
 
 ## Running the Application
 
