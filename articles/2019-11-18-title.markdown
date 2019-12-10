@@ -33,7 +33,7 @@ The game would operate as follows:
 
 To follow along with this article, a few things are required:
 
-1. basic Knowledge of Vuejs
+1. Basic knowledge of Vuejs
 2. [Nodejs](https://nodejs.org) installed on your system
 3. [Vue CLI](https://cli.vuejs.org/) installed on your system
 4. a Google account
