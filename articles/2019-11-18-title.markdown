@@ -1029,7 +1029,7 @@ These are the functions responsible for handing the game playing activities.
 7. `resetTimer`: Resets the timer back to the starting point
 8. `endGame`: Ends the game
 9. `startNewGame`: Start/Restarts the game
-10. `showModal`: Display the notifications modal
+10. `showModal`: Displays the notifications modal
 
 ### The game page template
 
