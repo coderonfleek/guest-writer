@@ -1024,7 +1024,7 @@ These are the functions responsible for handing the game playing activities.
 2. `skipEmoji`: Skips the currently displayed emoji and shows a new one to predict
 3. `captureImage`: Draws the current frame in the video element into a canvas element and converts the canvas image to a data URL that is then loaded to the screen using an image tag.
 4. `predictImage`: Makes a request to the Google Vision API with the captured image to return prediction results, then tries to find a match between the predicted values and the emoji label. If a match exists, the user scores points, if not, the user loses points.
-5. `switchEmoji`: Changes the currently displayed emoji
+5. `switchEmoji`: Changes the emoji currently displayed.
 6. `setTimer`: Starts the timer countdown for a game round.
 7. `resetTimer`: Resets the timer back to zero.
 8. `endGame`: Ends the game
