@@ -16,7 +16,7 @@ related:
 
 ## What You Will Build
 
-The application you will be building is a simple emoji game that displays a random emoji to the user, the user then has to scan a physical object around them that matches the emoji using the webcam and Google's Vision API will predict the scanned image and return results that will be compared to the emoji to see if it matches.
+The application you will be building is a simple emoji game that displays a random emoji to the user, the user then has to scan a physical object around them that matches the emoji using the webcam. Google's Vision API will predict the scanned image and return results that will be compared to the emoji to see if it matches.
 
 The game would operate as follows:
 
