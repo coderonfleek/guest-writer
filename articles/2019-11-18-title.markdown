@@ -100,7 +100,7 @@ On the **Create Application** dialog that pops up, enter an appropriate name for
 
 Now click the **Create** button to complete the process.
 
-After the successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vue application you would be creating later on.
+After the successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vue application you will be creating later on.
 
 Once you're done entering these values, scroll down and hit the **SAVE CHANGES** button.
 
