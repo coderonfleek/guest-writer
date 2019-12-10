@@ -362,7 +362,7 @@ Go ahead and install these by running the following command:
 
 `npm install axios bootstrap emoji.json`
 
-### The **Modal** component
+### The Modal component
 
 Before proceeding to build the game page, a modal component is required to display notifications on the game page. Go into the `src/components` folder and delete the `HelloWorld.vue` file that is comes by default with the scaffolded project and create a new file named `modal.vue` pasting the following code in it:
 
