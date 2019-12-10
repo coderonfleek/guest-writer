@@ -135,7 +135,7 @@ Once the installation is complete, the next thing you are to do is to create the
 
 Ensure to replace the placeholders `YOUR_AUTH0_DOMAIN` and `YOUR_APP_ID` with the appropriate values. You can find your client id on your application page and your Auth0 domain is in the form [YOUR_USERNAME].auth0.com e.g. user1.auth0.com.
 
-Now to create the authentication service, inside the `src` folder, created a folder named `auth` and side this folder create a file named `index.js` and paste the code below:
+Now to create the authentication service, inside the `src` folder, created a folder named `auth` and inside this folder create a file named `index.js` and paste the code below:
 
 ```javascript
 import Vue from "vue";
