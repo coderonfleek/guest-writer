@@ -955,7 +955,7 @@ gameEmojis() {
 }
 ```
 
-Now to the methods
+Now onto the methods!
 
 ### `login` and `logout`
 
