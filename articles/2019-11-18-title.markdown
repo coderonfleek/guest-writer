@@ -48,7 +48,7 @@ Once signed in, you would see the GCP dashboard. To create a new project, click 
 
 ![Project Dropdown - Google Cloud Platform](images/project-dropdown.png "Project Dropdown - Google Cloud Platform")
 
-This pops up a modal with a list of all your projects (empty if you are yet to create a project).
+This pops up a modal with a list of all your projects. If you have not created a project yet, this will be empty.
 
 On the modal, click on the **New Project** button at the top right-hand corner.
 
