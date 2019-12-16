@@ -714,7 +714,10 @@ export default {
       this.$refs.video1.srcObject = stream;
     },
     handleError(error) {
-      console.error("Error: ", error);
+      this.showModal(
+        "Error",
+        error.message
+      );
     },
     playGame() {
       //Get Random Emoji
