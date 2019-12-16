@@ -180,6 +180,8 @@ export const useAuth0 = ({
         try {
           await this.auth0Client.loginWithPopup(o);
         } catch (e) {
+          // eslint-disable-next-line
+          console.error(e);
         } finally {
           this.popupOpen = false;
         }
@@ -233,7 +235,7 @@ export const useAuth0 = ({
       });
 
       try {
-        // If the user is returning to the app after authentication
+        // If the user is returning to the app after authentication..
         if (
           window.location.search.includes("code=") &&
           window.location.search.includes("state=")
@@ -497,7 +499,7 @@ Go into the `src` folder and replace everything in the `App.vue` file with the c
       </div>
     </nav>
 
-    <section class="container mt-5" v-if="!$auth.isAuthenticated">
+    <div class="container mt-5" v-if="!$auth.isAuthenticated">
       <div class="row">
         <div class="col-md-8 offset-md-2">
           <div class="jumbotron">
@@ -522,10 +524,10 @@ Go into the `src` folder and replace everything in the `App.vue` file with the c
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- The emoji game -->
-    <section class="container mt-5" v-else>
+    <div class="container mt-5" v-else>
       <div class="row">
         <div class="col-md-4">
           <select class="form-control" v-model="selectedSource" @change="getStream()">
@@ -595,7 +597,7 @@ Go into the `src` folder and replace everything in the `App.vue` file with the c
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- Modal -->
 
@@ -626,7 +628,7 @@ export default {
       imageURL: null,
       predictingImage: false,
       gCloudVisionUrl:
-        "https://vision.googleapis.com/v1/images:annotate?key=YOUR_GOOGLE_PROJECT_API_KEY",
+        "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCk-S9i5xMbmiEAIVPtSC8VlyecH1rY8Uo",
       timerHandle: null,
       timerStart: 60,
       pointsIncrement: 10,
@@ -644,7 +646,7 @@ export default {
     modal
   },
   mounted() {
-
+    
     navigator.mediaDevices
       .enumerateDevices()
       .then(this.gotDevices)
@@ -685,6 +687,7 @@ export default {
         }
       }
 
+      
     },
     getStream() {
       if (window.stream) {
@@ -692,6 +695,9 @@ export default {
           track.stop();
         });
       }
+
+      
+
       var constraints = {
         video: {
           deviceId: { exact: this.selectedSource }
@@ -704,14 +710,11 @@ export default {
         .catch(this.handleError);
     },
     gotStream(stream) {
-
+      
       this.$refs.video1.srcObject = stream;
     },
     handleError(error) {
-      this.showModal(
-          "Error",
-          error.message
-      );
+      console.error("Error: ", error);
     },
     playGame() {
       //Get Random Emoji
@@ -738,7 +741,7 @@ export default {
 
       // Get image
       let image = canvas.toDataURL("image/png");
-
+      
 
       //Trim signature to get pure image data
       this.imageURL = image.replace(/^data:image\/(png|jpg);base64,/, "");
@@ -773,12 +776,12 @@ export default {
 
           let predictionResponse = predictionResults.data.responses[0];
 
+
           let annotations = predictionResponse.labelAnnotations;
 
           let allLabelDescriptions = annotations.map(annotation =>
             annotation.description.toLowerCase()
           );
-
 
 
           //Check if any of the prediction labels match the current emoji
@@ -790,7 +793,6 @@ export default {
               match = true;
             }
           });
-
 
 
           if (match == true) {
@@ -822,7 +824,6 @@ export default {
     switchEmoji() {
       let emojiIndex = this.getRandomInt(0, this.gameEmojis.length);
       this.currentEmoji = this.gameEmojis[emojiIndex];
-
     },
     setTimer() {
       this.resetTimer();
