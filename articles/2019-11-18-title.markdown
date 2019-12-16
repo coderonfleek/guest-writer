@@ -235,7 +235,7 @@ export const useAuth0 = ({
       });
 
       try {
-        // If the user is returning to the app after authentication..
+        // If the user is returning to the app after authentication
         if (
           window.location.search.includes("code=") &&
           window.location.search.includes("state=")
@@ -628,7 +628,7 @@ export default {
       imageURL: null,
       predictingImage: false,
       gCloudVisionUrl:
-        "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCk-S9i5xMbmiEAIVPtSC8VlyecH1rY8Uo",
+        "https://vision.googleapis.com/v1/images:annotate?key=YOUR_GOOGLE_PROJECT_API_KEY",
       timerHandle: null,
       timerStart: 60,
       pointsIncrement: 10,
@@ -646,7 +646,7 @@ export default {
     modal
   },
   mounted() {
-    
+
     navigator.mediaDevices
       .enumerateDevices()
       .then(this.gotDevices)
@@ -687,7 +687,7 @@ export default {
         }
       }
 
-      
+
     },
     getStream() {
       if (window.stream) {
@@ -696,7 +696,7 @@ export default {
         });
       }
 
-      
+
 
       var constraints = {
         video: {
@@ -710,7 +710,7 @@ export default {
         .catch(this.handleError);
     },
     gotStream(stream) {
-      
+
       this.$refs.video1.srcObject = stream;
     },
     handleError(error) {
@@ -741,7 +741,7 @@ export default {
 
       // Get image
       let image = canvas.toDataURL("image/png");
-      
+
 
       //Trim signature to get pure image data
       this.imageURL = image.replace(/^data:image\/(png|jpg);base64,/, "");
