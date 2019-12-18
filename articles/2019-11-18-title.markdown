@@ -46,17 +46,17 @@ The first thing you need to have set up is a [Google Cloud Platform](https://clo
 
 Once signed in, you would see the GCP dashboard. To create a new project, click on the project dropdown at the left-hand side of the blue top toolbar.
 
-![Project Dropdown - Google Cloud Platform](images/project-dropdown.png "Project Dropdown - Google Cloud Platform")
+<!--![Project Dropdown - Google Cloud Platform](images/project-dropdown.png "Project Dropdown - Google Cloud Platform")-->
 
-This pops up a modal with a list of all your projects. If you have not created a project yet, this will be empty.
+This pops up a modal with a list of all your projects. If you have not created a project yet, this modal will be empty.
 
 On the modal, click on the **New Project** button at the top right-hand corner.
 
-![Project Dialog](images/new-project.png "Create New Project - Google Cloud Platform")
+<!-- ![Project Dialog](images/new-project.png "Create New Project - Google Cloud Platform")-->
 
-This automatically redirects you to the project creation page where you can enter your preferred project name as shown below:
+This automatically redirects you to the project creation page where you can create a new Google Cloud Platform project.
 
-![Project Form](images/project-form.png "Project creation page - Google Cloud Platform")
+<!-- ![Project Form](images/project-form.png "Project creation page - Google Cloud Platform") -->
 
 After entering your project name, leave the **Location** as _No Organization_ and click the **Create** button.
 
@@ -66,15 +66,15 @@ The system automatically sets up the project and notifies you when it's done. It
 
 To be able to use GCP's Vision API, you need to enable the API for your project. With your project selected on the project dropdown, click **Dashboard** on the side menu. Then just below the top blue toolbar, click on the **Enable APIs and Services** button, this will then redirect you to the API library page which shows a list of all available APIs.
 
-In the search box, type in _Vision API_ to filter the list. You should now see the **Cloud Vision API** as shown below:
+In the search box, type in _Vision API_ to filter the list. You should now see the **Cloud Vision API** filtered out of the list.
 
-![Cloud Vision API](images/cloud-vision-api.png "Cloud Vision API - Google Cloud Platform")
+<!-- ![Cloud Vision API](images/cloud-vision-api.png "Cloud Vision API - Google Cloud Platform") -->
 
 Click on it to select it. You will now be redirected to the **Cloud Vision API** page that gives an overview of what the API is all about.
 
 Click on the blue **Enable** button to enable this API for your project.
 
-![Enable Cloud Vision API](images/enable-cloud-vision.png "Cloud Vision API - Google Cloud Platform")
+<!-- ![Enable Cloud Vision API](images/enable-cloud-vision.png "Cloud Vision API - Google Cloud Platform") -->
 
 ### Getting an API Key
 
@@ -92,7 +92,7 @@ Next up, you will be creating your Auth0 application to handle authentication in
 
 Once logged in, click on **Applications** on the left-hand side menu. On the **Applications** page, click on the big orange **CREATE APPLICATION** button.
 
-![Create Auth0 Application](images/create-app-btn.png "Create Application - Auth0 Console")
+<!-- ![Create Auth0 Application](images/create-app-btn.png "Create Application - Auth0 Console") -->
 
 On the **Create Application** dialog that pops up, enter an appropriate name for your application and select **Single Page Web Applications** from the options below the application name field.
 
