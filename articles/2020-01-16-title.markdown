@@ -41,7 +41,7 @@ On the **Create Application** dialog that pops up, enter an appropriate name for
 
 Now click the **Create** button to complete the process.
 
-After the successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vue application you will be creating later on.
+After the successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vuejs application you will be creating later on.
 
 Once you're done entering these values, scroll down and hit the **SAVE CHANGES** button.
 
@@ -69,9 +69,9 @@ Next up, you need to create a [Firebase](https://firebase.google.com/) project a
 
 Head over to you [Firebase console](https://console.firebase.google.com/) and create a new project using any preferred name.
 
-Next, create a new database by clicking on **Database** under the **Develop** section of the side menu. This displays a page where you have the option of creating **Cloud Firestore** or **Realtime Database** database, go ahead and create a Cloud firestore database.
+Next, create a new database by clicking on **Database** under the **Develop** section of the side menu. This displays a page where you have the option of creating **Cloud Firestore** or **Realtime Database** database, go ahead and create a Cloud Firestore database.
 
-On the **Security Rules** section of your database creation modal, select **Start in test mode** to enable `read` and `write` access to your database (ensure to setup security rules in production).
+On the **Security Rules** section of your database creation modal, select **Start in test mode** to enable `read` and `write` access to your database (ensure to set up security rules in production).
 
 On the **Set Cloud Firestore location** section, go with the default location and hit the **Done** button to complete the database creation process. Once this is done, you will be redirected to the Database page.
 
@@ -86,7 +86,7 @@ Our collection will contain documents with the following fields
 - `user`: Email of the user
 - `account_name`: Name of the online platform the user is saving its credentials e.g Auth0
 - `account_id`: The login id to the online platform like an email or username
-- `encrypted_password`: The encrypted form of the password.
+- `encrypted_password`: The encrypted form of the password
 
 For the first document, leave the **Document ID** field blank and enter some dummy values for the other fields as shown below:
 
@@ -96,16 +96,651 @@ Click **Save** and you are all set.
 
 Before leaving your console, you will need some information about your project and database that will be needed later in the course of the exercise.
 
-- Project ID: This can be found by clicking the cog icon on the side menu and going to the **Project Settings** page to retrieve it.
+- Project ID: This can be found by clicking the cog icon on the side menu and going to the **Project Settings** page to retrieve it
 
-* Database URL: This is of the form `https://YOUR_PROJECT_ID.firebaseio.com/`.
+- Database URL: This is of the form `https://YOUR_PROJECT_ID.firebaseio.com/`
 
-## Scaffolding the Vuejs Application
+## Scaffolding the Vue Project
+
+Create a new Vue application by running the following command in the folder where you want your application to be located.
+
+`vue create my-password-keeper`
+
+When the **Please pick a preset?** prompt comes up in the interactive CLI, select _default_.
+
+After your selection, the Vue CLI begins scaffolding your new Vuejs application.
 
 ## Creating an Auth0 Passwordless Authentication Plugin
 
+To work with Passwordless, you will need the [Auth0 Lock](https://github.com/auth0/lock/) NPM package. This package contains all you need for authenticating your application with Passwordless.
+
+To use this package effectively in the Vuejs application just scaffolded, a Vuejs authentication plugin will be created and exported to be used within the application. This plugin will make use of the Auth0 Lock package to set up authentication functions and parameters that can be made use of in the application pages and components.
+
+Install the Auth0 Lock package by running the command:
+
+```
+npm install auth0-lock
+```
+
+**NB**: If after installing this package or at any point in this exercise you encounter an error regarding `core-js`, simply run `npm install core-js` to fix the issue.
+
+Within the `src` folder, create a new folder named **auth** and within this folder, create a file named `index.js` and place the following code inside the file:
+
+```javascript
+import Vue from "vue";
+import { Auth0LockPasswordless } from "auth0-lock";
+
+let instance;
+
+export const getInstance = () => instance;
+
+export const useAuth0 = options => {
+  if (instance) return instance;
+
+  instance = new Vue({
+    data() {
+      return {
+        loading: true,
+        isAuthenticated: false,
+        user: {},
+        auth0Lock: null,
+        popupOpen: false,
+        error: null,
+        accessToken: null
+      };
+    },
+    methods: {
+      login(loginOptions) {
+        this.popupOpen = true;
+
+        this.auth0Lock.show(loginOptions);
+      },
+      checkSession() {
+        return new Promise((resolve, reject) => {
+          this.auth0Lock.checkSession({}, (error, authResult) => {
+            if (error || !authResult) {
+              this.auth0Lock.show();
+            } else {
+              this.auth0Lock.getUserInfo(
+                authResult.accessToken,
+                (error, profile) => {
+                  if (error) {
+                    reject(error);
+                  }
+
+                  this.setProfileDetails(authResult.accessToken, profile);
+                  resolve(profile);
+                }
+              );
+            }
+          });
+        });
+      },
+
+      logout(o) {
+        return this.auth0Lock.logout(o);
+      },
+      setProfileDetails(token, profile) {
+        this.accessToken = token;
+        this.user = profile;
+        this.isAuthenticated = true;
+      }
+    },
+
+    async created() {
+      this.auth0Lock = new Auth0LockPasswordless(
+        options.clientId,
+        options.domain
+      );
+
+      this.auth0Lock.on("authenticated", authResult => {
+        this.auth0Lock.getUserInfo(
+          authResult.accessToken,
+          (error, profileResult) => {
+            if (error) {
+              throw error;
+            }
+
+            this.setProfileDetails(authResult.accessToken, profileResult);
+          }
+        );
+      });
+    }
+  });
+
+  return instance;
+};
+
+// Create a simple Vue plugin to expose the wrapper object throughout the application
+export const Auth0Plugin = {
+  install(Vue, options) {
+    Vue.prototype.$auth = useAuth0(options);
+  }
+};
+```
+
+This service creates a wrapper object around the Auth0 Lock SDK and implements a Vuejs plugin that exposes this wrapper object to the rest of the application. This wrapper API consists of user authentication methods like:
+
+- `login`: Displays the Auth0 Passwordless login pop up
+- `logout`: Ends the user's session
+- `checkSession`: Checks if a user's session is still active
+
+Useful variables like `isAuthenticated` and `user` are also exposed to represent the user's authenticated state and profile respectively.
+
+The next step is to enable the application use this plugin. First, you need a place to store your Auth0 credentials which the plugin makes use of in creating a new instance of the SDK.
+
+Create a new file named `auth_config.json` at the root of your project and paste the following snippet inside:
+
+```json
+{
+  "domain": "YOUR_AUTH0_DOMAIN",
+  "clientId": "YOUR_APP_ID"
+}
+```
+
+Replace the placeholders with your Auth0 details and ensure to ignore this file in `.gitignore`.
+
 ## Setting Up Connection to the Firestore Database
+
+Before setting up the authentication plugin to be used in the application, you need to also create a service that would allow the application to make use of the Firestore database.
+
+First, create a file named `firebase_auth.json` at the root of your project and place the following content in it:
+
+```json
+{
+  "project_id": "YOUR_FIREBASE_PROJECT_ID",
+  "db_url": "https://YOUR_FIREBASE_PROJECT_ID.firebaseio.com/",
+  "passwords_db": "passwordkeeper"
+}
+```
+
+Replace the project id with the one you got from your Firebase console earlier and ensure to ignore this file in `.gitignore`.
+
+To work with with Firebase in Vuejs, we will need the [firebase](https://www.npmjs.com/package/firebase) and [vuefire](https://www.npmjs.com/package/vuefire) npm packages.
+
+The Vuefire makes working with Firebase in Vuejs a breeze by providing the necessary APIs that abstracts alot of boilerplate error prone code. For more details on how to work with Vuefire, checkout the [documentation](https://vuefire.vuejs.org/).
+
+Now install the `firebase` and `vuefire` packages by running the following command:
+
+```
+npm install vuefire firebase
+```
+
+Next, in the `src` folder, create a file named `db.js` and place the following code in it:
+
+```javascript
+import firebase from "firebase/app";
+import "firebase/firestore";
+import { project_id, db_url } from "../firebase_auth.json";
+
+const db = firebase
+  .initializeApp({ projectId: project_id, databaseURL: db_url })
+  .firestore();
+
+export default db;
+```
+
+Perfect!
+
+Now you can setup the application to use both the authentication plugin we created earlier and the firebase service by replcaing the code in the `main.js` file with the following:
+
+```javascript
+import Vue from "vue";
+import App from "./App.vue";
+
+import { domain, clientId } from "../auth_config.json";
+
+import { Auth0Plugin } from "./auth";
+
+import { firestorePlugin } from "vuefire";
+
+// Install the authentication plugin here
+Vue.use(Auth0Plugin, {
+  domain,
+  clientId
+});
+
+// Install the firestore plugin here
+Vue.use(firestorePlugin);
+
+Vue.config.productionTip = false;
+
+new Vue({
+  render: h => h(App)
+}).$mount("#app");
+```
+
+In the above code, the authentication plugin is set up using the Auth0 client id and domain. The firestore plugin is also imported from the `vuefire` package and setup in the application.
 
 ## Adding a notifications modal component
 
+Time to start building the application components. First we need to install [Bootstrap](http://getbootstrap.com/) to help improve the user interface. Run the following command to install `bootstrap`:
+
+```
+npm install bootstrap
+```
+
+To display messages to users of the application, create a messaging modal component by creating the file `modal.vue` in the `components` folder and paste the following code inside:
+
+```javascript
+<template>
+  <transition name="modal">
+    <div class="modal-mask">
+      <div class="modal-wrapper">
+        <div class="modal-container">
+          <div class="modal-header">{{header}}</div>
+
+          <div class="modal-body">{{content}}</div>
+
+          <div class="modal-footer">
+            <button class="modal-default-button btn btn-primary" @click="$emit('close')">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  props: ["header", "content"]
+};
+</script>
+
+<style scoped>
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity 0.3s ease;
+}
+
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.modal-container {
+  width: 600px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  transition: all 0.3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-default-button {
+  float: right;
+}
+
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-leave-active {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+</style>
+
+```
+
+Good!
+
+The component recieves a `title` and `message` as props pops up when set to display.
+
 ## Building the Password Keeper
+
+Its finally time to create the user-facing part of the application. The application consists of a single page with the following features:
+
+1. A welcome page for a non-authenticated user
+2. Display the Auth0 Passwordless login for non-authenticated users
+3. A form to save a new account with the password encrypted
+4. A list that displays all saved passwords
+5. A button to descrypt the password and display the credentials of a saved account.
+6. A button to signout of the application
+
+As stated earlier, plain text passwords will not be saved to our Firestore database, passwords will be encrypted and then saved to the database.
+
+To perform the encryption, the [Cryptojs](https://www.npmjs.com/package/crypto-js) package will be used. This package uses [AES Encryption](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) to encrypt the password the user enters and then also decrypts the password when the user requests to see it.
+
+Install the `crypto-js` package by running the following command:
+
+```
+npm install crypto-js
+```
+
+All that is needed for the application is now in place. Go into the `App.vue` file and replace everything inside it with the code below:
+
+```javascript
+
+<template>
+  <div id="app">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">
+        Password Keeper
+        <span v-if="$auth.isAuthenticated">( {{ $auth.user.name }} )</span>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarText"
+        aria-controls="navbarText"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <div class="navbar-nav mr-auto user-details">
+          <span v-if="$auth.isAuthenticated">({{ $auth.user.email }})</span>
+          <span v-else>&nbsp;</span>
+        </div>
+
+        <span class="navbar-text">
+          <ul class="navbar-nav float-right">
+            <li class="nav-item" v-if="!$auth.isAuthenticated">
+              <a class="nav-link" href="#" @click="login()">Log In</a>
+            </li>
+
+            <li class="nav-item" v-if="$auth.isAuthenticated">
+              <a class="nav-link" href="#" @click="logout()">Log Out</a>
+            </li>
+          </ul>
+        </span>
+      </div>
+    </nav>
+
+    <div v-if="!$auth.isAuthenticated" id="welcomeScreen">
+      <h1>Welcome to Vue Password Keeper</h1>
+      <p>
+        <i>We'll never share your secret with anyone else.</i>
+      </p>
+      <button class="btn btn-primary" @click="login()">Login To Auth0</button>
+    </div>
+    <div v-else id="appScreen" class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <form>
+            <div class="form-group">
+              <label>Enter Account Name</label>
+              <input
+                class="form-control"
+                v-model="passwordForm.account_name"
+                placeholder="E.g My Auth0 Account"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Enter Account ID</label>
+              <input
+                class="form-control"
+                v-model="passwordForm.account_id"
+                placeholder="E.g my@email.com or myusername"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Enter Password</label>
+              <input class="form-control" type="password" v-model="passwordForm.password" />
+              <small class="form-text text-muted">We'll never share your secret with anyone else.</small>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="savePassword()"
+              :disabled="processing"
+            >{{processing? "Saving...": "Save Password"}}</button>
+          </form>
+        </div>
+        <div class="col-md-6 offset-md-2">
+          <h3>Saved Passwords</h3>
+          <ul class="list-group">
+            <li class="list-group-item" v-for="password in savedpasswords" :key="password.id">
+              {{password.account_name}}
+              <button
+                class="btn btn-success float-right"
+                @click="viewPassword(password)"
+              >View Password</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal -->
+
+      <modal
+        v-if="modal.show"
+        @close="modal.show = false"
+        :header="modal.header"
+        :content="modal.content"
+      ></modal>
+    </div>
+  </div>
+</template>
+
+<script>
+import "bootstrap/dist/css/bootstrap.css";
+let CryptoJS = require("crypto-js");
+import db from "./db.js";
+import { passwords_db } from "../firebase_auth.json";
+import modal from "./components/modal";
+
+export default {
+  name: "app",
+  data() {
+    return {
+      passwordForm: {},
+      savedpasswords: [],
+      processing: false,
+      modal: {
+        show: false,
+        header: "My header",
+        content: "My Content"
+      },
+      user: this.$auth.user
+    };
+  },
+  async created() {
+    let profile = await this.$auth.checkSession();
+
+    this.$bind(
+      "savedpasswords",
+      db.collection(passwords_db).where("user", "==", profile.email || "")
+    );
+  },
+
+  components: { modal },
+
+  methods: {
+    login() {
+      this.$auth.login();
+    },
+    logout() {
+      this.$auth.logout();
+    },
+    async savePassword() {
+      if (
+        this.passwordForm.account_name &&
+        this.passwordForm.account_id &&
+        this.passwordForm.password
+      ) {
+        let ciphertext = CryptoJS.AES.encrypt(
+          this.passwordForm.password,
+          this.$auth.user.sub
+        );
+
+        let postData = {
+          user: this.$auth.user.email,
+          account_id: this.passwordForm.account_id,
+          account_name: this.passwordForm.account_name,
+          encrypted_password: ciphertext.toString()
+        };
+
+        this.processing = true;
+
+        await db.collection(passwords_db).add(postData);
+
+        this.processing = false;
+
+        this.showModal(
+          "Success",
+          `Password Successfully added for Account: ${this.passwordForm.account_name}`
+        );
+
+        //Clear form
+        this.passwordForm = {};
+      } else {
+        this.showModal("Error", `All fields are required`);
+      }
+    },
+    showModal(title, body) {
+      this.modal = {
+        show: true,
+        header: title,
+        content: body
+      };
+    },
+    viewPassword(passwordDetails) {
+      //Decrypt password
+      let bytes = CryptoJS.AES.decrypt(
+        passwordDetails.encrypted_password,
+        this.$auth.user.sub
+      );
+      let plaintextPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+      this.showModal(
+        `Credentials for ${passwordDetails.account_name}`,
+        `Account ID: ${passwordDetails.account_id}, Password: ${plaintextPassword}`
+      );
+    }
+  }
+};
+</script>
+
+<style>
+#app {
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
+
+  color: #2c3e50;
+}
+
+#welcomeScreen,
+#appScreen {
+  margin-top: 20px;
+}
+
+#welcomeScreen {
+  text-align: center;
+}
+</style>
+
+```
+
+Now take a deep breathe as we break down the load of code above starting with the Vuejs instance.
+
+The required libraries, services and files are first imported:
+
+```javascript
+import "bootstrap/dist/css/bootstrap.css";
+let CryptoJS = require("crypto-js");
+import db from "./db.js";
+import { passwords_db } from "../firebase_auth.json";
+import { user_localstorage_key } from "../auth_config.json";
+import modal from "./components/modal";
+```
+
+The required application variables are then declared in the `data` parameter of the object.
+
+```javascript
+
+data() {
+  return {
+    passwordForm: {},
+    savedpasswords: [],
+    processing: false,
+    modal: {
+      show: false,
+      header: "My header",
+      content: "My Content"
+    },
+    user: this.$auth.user
+  };
+}
+```
+
+Then, in the `created` lifecycle method, the user session is checked, if the session is still active, the user's profile is returned and used to load the saved accounts from the Firestore database and bind it to the `savedpasswords` data variable:
+
+```javascript
+async created() {
+  let profile = await this.$auth.checkSession();
+
+  this.$bind(
+    "savedpasswords",
+    db.collection(passwords_db).where("user", "==", profile.email || "")
+  );
+}
+```
+
+Now to the methods in the application:
+
+1. `login`: Calls the `login` method in the authentication service to pop up an new Auth0 Passwordless login window.
+2. `logout`: Calls the `logout` method in the authentication service to end the user's session
+3. `savePassword`: Validates the form entry, encrypts the password and saves a new account with the user's email then displays a success message.
+4. `showModal`: Displays a popup message using the `modal` component.
+5. `viewPassword`: Takes the selected account, decrypts the password and displays the credentials in a modal window.
+
+In the application template, Vuejs's `v-if` is used to manage the authenticated and non-authenticated interfaces displayed to the user. When a non-authenticated user visits the page, he/she sees a welcome screen and a **Log In** button.
+
+When authenticated, the user sees a form to save new accounts and a list displaying saved accounts with each account having a **View Password** button for the user to view their password and other account details in plain text.
+
+## Running the application
+
+Time to take the application for a spin. Serve the application in your browser by running the following command:
+
+```
+npm run serve
+```
+
+If all iinstructions have been properly followed you should see the screen below at the address `http://localhost:8080`:
+
+![Application Login](images/app-screen-no-auth.png "Application Login - Password Keeper")
+
+The Passwordless login popup prompts the user for an email address. Simply enter your email address and hit **Submit** to get the one-time token in your mail, then enter it in the next screen as shown below:
+
+![Application Login](images/enter-otp.png "Application Login - Password Keeper")
+
+Upon successfuly login, you should see the form. Go ahead and create some stored accounts like below:
+
+![Application Page](images/app-page.png "Application Page - Password Keeper")
+
+Click on **View Password** on any of the accounts to view your credentials in plain text.
+
+## Conclusion
+
+Having a place to securely store login credentials of the numerous online accounts you have is a luxury everyone would not mind having. Not having to remember the password to the application that stores these credentials using Passwordless by Auth0 is also a dream come true (atleats for me :)).
+
+I hope you enjoyed this article as much as I did writing it. Happy coding
