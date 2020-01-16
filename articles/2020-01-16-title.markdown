@@ -9,15 +9,59 @@ author:
   mail: "fik4christ@yahoo.com"
   avatar: "https://twitter.com/coderonfleek/profile_image?size=original"
 related:
-- 2017-11-15-an-example-of-all-possible-elements
+  - 2017-11-15-an-example-of-all-possible-elements
 ---
 
-**TL;DR:** Briefly describe what this article is about and what the reader will achieve/learn after reading it. Please,
-also provide the link to a GitHub repository that contains code related to this article.
+**TL;DR:** To date, passwords and passcodes remain the most used means of gaining access to our protected accounts on the online platforms we love. However, if you are like me with loads of accounts across various online platforms, remembering all passwords can quickly become a herculean task mentally especially when certain online platforms require you to provide strong passwords with special characters, capitalized words and numbers like you're trying to gain access to Fort Knox. Wouldn't it be wonderful to have a software where you could just store all your login credentials and have them stored in an encrypted form and retrievable by you at will? Well, I'm pleased to inform you that that is what this article is all about.
+
+## What You Will Build
+
+In this article, you will be building an application that will help users store their credentials to various online platforms and store the passwords in an encrypted format. Users can then click to view their passwords and have it decrypted and displayed to them.
+
+An interesting angle to this application is that users will not need a password to log into it. Anytime users want to have access to this application, they are sent a one-time token which they can then use to gain access to the app. This will be made possible by an amazing [Auth0](https://auth0.com) product called [Passwordless](https://auth0.com/passwordless).
+
+## Prerequisites
+
+To follow along with this article, a few things are required:
+
+1. Basic knowledge of Vuejs
+2. [Nodejs](https://nodejs.org) installed on your system
+3. [Vue CLI](https://cli.vuejs.org/) installed on your system
+4. A [Firebase](https://firebase.google.com/) account
 
 ## Creating the Auth0 Application
 
+The first step is to create the Auth0 application that you will be using to handle authentication in the application, so head to [Auth0](https://auth0.com)'s website and click the **Log in** button to sign in to the console.
+
+Once logged in, click on **Applications** on the left-hand side menu. On the **Applications** page, click on the big orange **CREATE APPLICATION** button.
+
+On the **Create Application** dialog that pops up, enter an appropriate name for your application (in this case **A Vue Passwordless App**) and select **Single Page Web Applications** from the options below the application name field.
+
+![Create Auth0 Application](images/new-app.png "Create Application - Auth0 Console")
+
+Now click the **Create** button to complete the process.
+
+After the successful creation of the application, go to the **Settings** section of your newly created app. In the **Allowed Callback URLs**, **Allowed Web Origins**, **Allowed Logout URLs** and **Allowed Origins (CORS)** fields, enter `http://localhost:8080`. This address is the default address of the Vue application you will be creating later on.
+
+Once you're done entering these values, scroll down and hit the **SAVE CHANGES** button.
+
 ## Enabling Passwordless Connections
+
+To make use of Auth0's Passwordless service, you need to enable it and ensure that it is activated for your application.
+
+To do this, go to the sidemenu on your Dashboard and click on **Connections**, then under that, click on **Passwordless**. On the Passwordless connections page, enable the **Email** option as we will be sending the one-time token to the user's email address.
+
+![Enable Passwordless](images/enable-passwordless.png "Enable Passwordless - Auth0 Console")
+
+Another option available is the **SMS** option. This option will have the one-time token sent to the user's phone number. This option requires configuring a SMS gateway like [Twilio](https://www.twilio.com/) to enable sending SMS.
+
+The next step is make sure your application is enabled to use the Passwordless service. Click on the **Email** tab you just enabled. On the modal, click the **Applications** tab to confirm that your application is enabled. If not, enable it as shown below:
+
+![Enable Application](images/enable-app.png "Enable Application - Auth0 Console")
+
+The modal also has a **Settings** tab where you can customize some of the default values for the email that will be sent to the user containing the one-time password. Make sure you know what you are doing before touching any of the values. The default values are good enough in most cases.
+
+Ensure that you click the **Save** button when you make any change on the modal.
 
 ## Creating the Firestore Database
 
