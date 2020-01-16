@@ -49,21 +49,56 @@ Once you're done entering these values, scroll down and hit the **SAVE CHANGES**
 
 To make use of Auth0's Passwordless service, you need to enable it and ensure that it is activated for your application.
 
-To do this, go to the sidemenu on your Dashboard and click on **Connections**, then under that, click on **Passwordless**. On the Passwordless connections page, enable the **Email** option as we will be sending the one-time token to the user's email address.
+To do this, go to the side menu on your Dashboard and click on **Connections**, then under that, click on **Passwordless**. On the Passwordless connections page, enable the **Email** option as we will be sending the one-time token to the user's email address.
 
 ![Enable Passwordless](images/enable-passwordless.png "Enable Passwordless - Auth0 Console")
 
-Another option available is the **SMS** option. This option will have the one-time token sent to the user's phone number. This option requires configuring a SMS gateway like [Twilio](https://www.twilio.com/) to enable sending SMS.
+Another option available is the **SMS** option. This option will have the one-time token sent to the user's phone number. This option requires configuring an SMS gateway like [Twilio](https://www.twilio.com/) to enable sending SMS.
 
-The next step is make sure your application is enabled to use the Passwordless service. Click on the **Email** tab you just enabled. On the modal, click the **Applications** tab to confirm that your application is enabled. If not, enable it as shown below:
+The next step is to make sure your application is enabled to use the Passwordless service. Click on the **Email** tab you just enabled. On the modal, click the **Applications** tab to confirm that your application is enabled. If not, enable it as shown below:
 
 ![Enable Application](images/enable-app.png "Enable Application - Auth0 Console")
 
-The modal also has a **Settings** tab where you can customize some of the default values for the email that will be sent to the user containing the one-time password. Make sure you know what you are doing before touching any of the values. The default values are good enough in most cases.
+The modal also has a **Settings** tab where you can customize some of the default values for the email that will be sent to the user containing the one-time password. Make sure you know what you are doing before touching any of these values. The default values are good enough in most cases.
 
 Ensure that you click the **Save** button when you make any change on the modal.
 
 ## Creating the Firestore Database
+
+Next up, you need to create a [Firebase](https://firebase.google.com/) project and [Cloud Firestore](https://firebase.google.com/docs/firestore) database.
+
+Head over to you [Firebase console](https://console.firebase.google.com/) and create a new project using any preferred name.
+
+Next, create a new database by clicking on **Database** under the **Develop** section of the side menu. This displays a page where you have the option of creating **Cloud Firestore** or **Realtime Database** database, go ahead and create a Cloud firestore database.
+
+On the **Security Rules** section of your database creation modal, select **Start in test mode** to enable `read` and `write` access to your database (ensure to setup security rules in production).
+
+On the **Set Cloud Firestore location** section, go with the default location and hit the **Done** button to complete the database creation process. Once this is done, you will be redirected to the Database page.
+
+The next line of action is to create a collection in your database. Click the **Start Collection** button to create one. Enter the name `passwordkeeper` in the **Collection ID** field as shown below, this will represent our collection name:
+
+![Create Collection](images/create-collection.png "Create Collection - Firebase Console")
+
+Click the **Next** button to define the very first document in this collection.
+
+Our collection will contain documents with the following fields
+
+- `user`: Email of the user
+- `account_name`: Name of the online platform the user is saving its credentials e.g Auth0
+- `account_id`: The login id to the online platform like an email or username
+- `encrypted_password`: The encrypted form of the password.
+
+For the first document, leave the **Document ID** field blank and enter some dummy values for the other fields as shown below:
+
+![Create Collection](images/first-document.png "Create Collection - Firebase Console")
+
+Click **Save** and you are all set.
+
+Before leaving your console, you will need some information about your project and database that will be needed later in the course of the exercise.
+
+- Project ID: This can be found by clicking the cog icon on the side menu and going to the **Project Settings** page to retrieve it.
+
+* Database URL: This is of the form `https://YOUR_PROJECT_ID.firebaseio.com/`.
 
 ## Scaffolding the Vuejs Application
 
