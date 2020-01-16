@@ -15,10 +15,18 @@ related:
 **TL;DR:** Briefly describe what this article is about and what the reader will achieve/learn after reading it. Please,
 also provide the link to a GitHub repository that contains code related to this article.
 
-## The Second Most Important Title
+## Creating the Auth0 Application
 
-Usually, we start describing again what this article is about. The difference, however, is that here we can explain with
-more words. Another important thing that we should include in this first paragraph are the name of the main technologies
-that we will talk about, and add a link to them. For example, we could say that we are going to use
-[React](https://reactjs.org/) and [Redux](https://redux.js.org/) to develop a simple
-[SPA (Single Page Application)](https://en.wikipedia.org/wiki/Single-page_application).
+## Enabling Passwordless Connections
+
+## Creating the Firestore Database
+
+## Scaffolding the Vuejs Application
+
+## Creating an Auth0 Passwordless Authentication Plugin
+
+## Setting Up Connection to the Firestore Database
+
+## Adding a notifications modal component
+
+## Building the Password Keeper
