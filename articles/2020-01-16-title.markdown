@@ -116,17 +116,19 @@ To work with Passwordless, you will need the [Auth0 Lock](https://github.com/aut
 
 To use this package effectively in the Vuejs application just scaffolded, a Vuejs authentication plugin will be created and exported to be used within the application. This plugin will make use of the Auth0 Lock package to set up authentication functions and parameters that can be made use of in the application pages and components.
 
-Install the Auth0 Lock package by running the command:
+Go to into the root of your project and install the Auth0 Lock package by running the command:
 
 ```
 npm install auth0-lock
 ```
 
-**NB**: If after installing this package or at any point in this exercise you encounter an error regarding `core-js`, simply run `npm install core-js` to fix the issue.
+**Note**: If after installing this package or at any point in this exercise you encounter an error regarding `core-js`, simply run `npm install core-js` to fix the issue.
 
 Within the `src` folder, create a new folder named **auth** and within this folder, create a file named `index.js` and place the following code inside the file:
 
 ```javascript
+// src/auth/index.js
+
 import Vue from "vue";
 import { Auth0LockPasswordless } from "auth0-lock";
 
@@ -269,6 +271,8 @@ npm install vuefire firebase
 Next, in the `src` folder, create a file named `db.js` and place the following code in it:
 
 ```javascript
+// src/db.js
+
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { project_id, db_url } from "../firebase_auth.json";
@@ -285,6 +289,8 @@ Perfect!
 Now you can set up the application to use both the authentication plugin we created earlier and the firebase service by replacing the code in the `main.js` file with the following:
 
 ```javascript
+// src/main.js
+
 import Vue from "vue";
 import App from "./App.vue";
 
@@ -323,6 +329,8 @@ npm install bootstrap
 To display messages to users of the application, create a messaging modal component by creating the file `modal.vue` in the `components` folder and paste the following code inside:
 
 ```javascript
+/* src/components/modal.vue */
+
 <template>
   <transition name="modal">
     <div class="modal-mask">
@@ -434,6 +442,7 @@ npm install crypto-js
 All that is needed for the application is now in place. Go into the `App.vue` file and replace everything inside it with the code below:
 
 ```javascript
+/* src/App.vue */
 
 <template>
   <div id="app">
@@ -726,14 +735,13 @@ npm run serve
 
 If all instructions have been properly followed you should see the screen below at the address `http://localhost:8080`:
 
-**NB**: As stated earlier in the article, if you run into any error regarding `core-js`, simply run the following command to install the package:
+**Note**: As stated earlier in the article, if you run into any error regarding `core-js`, simply run the following command to install the package:
 
 ```
 npm install core-js
 ```
 
 ![Application Login](images/app-screen-no-auth.png "Application Login - Password Keeper")
-
 
 The Passwordless login popup prompts the user for an email address. Simply enter your email address and hit **Submit** to get the one-time token in your mail, then enter it in the next screen as shown below:
 
