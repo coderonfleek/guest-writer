@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Building Event Planner application with Vuejs, Firebase and Passwordless"
-description: "This article describes and demonstrates how to develop an application that allows users to store their passwords in an encrypted form and saves it on Firebase Cloud Firestore database. Users can sign into this application without a password using Auth0's Passwordless."
+description: "This article describes and demonstrates how to develop an application that allows users to plan personal events and check off important tasks leading up to that event. Users can sign into this application without a password using Auth0's Passwordless."
 date: "2020-01-16 08:30"
 author:
   name: "Fikayo Adepoju"
