@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Building Password Keeper application with Vuejs, Firebase and Passwordless"
+title: "Building Event Planner application with Vuejs, Firebase and Passwordless"
 description: "This article describes and demonstrates how to develop an application that allows users to store their passwords in an encrypted form and saves it on Firebase Cloud Firestore database. Users can sign into this application without a password using Auth0's Passwordless."
 date: "2020-01-16 08:30"
 author:
@@ -12,11 +12,11 @@ related:
   - 2017-11-15-an-example-of-all-possible-elements
 ---
 
-**TL;DR:** To date, passwords and passcodes remain the most used means of gaining access to our protected accounts on the online platforms we love. However, if you are like me with loads of accounts across various online platforms, remembering all passwords can quickly become a herculean task mentally especially when certain online platforms require you to provide strong passwords with special characters, capitalized words and numbers like you're trying to gain access to Fort Knox. Wouldn't it be wonderful to have a software where you could just store all your login credentials and have them stored in an encrypted form and retrievable by you at will? Well, I'm pleased to inform you that that is what this article is all about.
+**TL;DR:** To date, passwords and passcodes remain the most used means of gaining access to our protected accounts on the online platforms we love. However, if you are like me with loads of accounts across various online platforms, remembering all passwords can quickly become a herculean task mentally especially when certain online platforms require you to provide strong passwords with special characters, capitalized words and numbers like you're trying to gain access to Fort Knox. Wouldn't it be wonderful to not have to remember passwords when logging into an application? That is the type of application we would be building in this article.
 
 ## What You Will Build
 
-In this article, you will be building an application that will help users store their credentials to various online platforms and store the passwords in an encrypted format. Users can then click to view their passwords and have it decrypted and displayed to them.
+In this article, you will be building an application that will help users create and events and organize a checklist of tasks that needs to be completed to make the event a success.
 
 An interesting angle to this application is that users will not need a password to log into it. Anytime users want to have access to this application, they are sent a one-time token which they can then use to gain access to the app. This will be made possible by an amazing [Auth0](https://auth0.com) product called [Passwordless](https://auth0.com/passwordless).
 
@@ -35,7 +35,7 @@ The first step is to create the Auth0 application that you will be using to hand
 
 Once logged in, click on **Applications** on the left-hand side menu. On the **Applications** page, click on the big orange **CREATE APPLICATION** button.
 
-On the **Create Application** dialog that pops up, enter an appropriate name for your application (in this case **A Vue Passwordless App**) and select **Single Page Web Applications** from the options below the application name field.
+On the **Create Application** dialog that pops up, enter an appropriate name for your application (in this case **Passwordless Event Planner**) and select **Single Page Web Applications** from the options below the application name field.
 
 ![Create Auth0 Application](images/new-app.png "Create Application - Auth0 Console")
 
@@ -75,7 +75,7 @@ On the **Security Rules** section of your database creation modal, select **Star
 
 On the **Set Cloud Firestore location** section, go with the default location and hit the **Done** button to complete the database creation process. Once this is done, you will be redirected to the Database page.
 
-The next line of action is to create a collection in your database. Click the **Start Collection** button to create one. Enter the name `passwordkeeper` in the **Collection ID** field as shown below, this will represent your collection name:
+The next line of action is to create a collection in your database. Click the **Start Collection** button to create one. Enter the name `eventsdb` in the **Collection ID** field as shown below, this will represent your collection name:
 
 ![Create Collection](images/create-collection.png "Create Collection - Firebase Console")
 
@@ -84,9 +84,9 @@ Click the **Next** button to define the very first document in this collection.
 Our collection will contain documents with the following fields
 
 - `user`: Email of the user
-- `account_name`: Name of the online platform the user is saving its credentials e.g Auth0
-- `account_id`: The login id to the online platform like an email or username
-- `encrypted_password`: The encrypted form of the password
+- `event_name`: Title for the event e.g Road Trip
+- `due_date`: The date then event will take place
+- `tasks`: An array of tasks that need to be completed before the event
 
 For the first document, leave the **Document ID** field blank and enter some dummy values for the other fields as shown below:
 
@@ -104,11 +104,23 @@ Before leaving your console, you will need some information about your project a
 
 Create a new Vue application by running the following command in the folder where you want your application to be located.
 
-`vue create my-password-keeper`
+`vue create event-planner`
 
 When the **Please pick a preset?** prompt comes up in the interactive CLI, select _default_.
 
 After your selection, the Vue CLI begins scaffolding your new Vuejs application.
+
+## Installing a component library
+
+Once the scaffolding process is done, the next step is to install a components library. Why do you need a components library? Glad you asked. The project requires a calendar and modal component, thus it makes sense to install a component library that has these (and many more) components.
+
+For this purpose, you will be installing the [Vuetify UI Library](https://vuetifyjs.com/). To install the library, run the following command:
+
+`vue add vuetify`
+
+At some point in the installation you will be prompted to select a preset, simply go with the `Default` preset to continue the installation.
+
+This installation makes a few changes to your Vuejs application, these changes help set up the `vuetify` library. The most important one is a `plugins` folder in the `src` containing a Vuejs plugin set up for `vuetify`.
 
 ## Creating an Auth0 Passwordless Authentication Plugin
 
@@ -252,7 +264,7 @@ First, create a file named `firebase_auth.json` at the root of your project and 
 {
   "project_id": "YOUR_FIREBASE_PROJECT_ID",
   "db_url": "https://YOUR_FIREBASE_PROJECT_ID.firebaseio.com/",
-  "passwords_db": "passwordkeeper"
+  "passwords_db": "eventsdb"
 }
 ```
 
@@ -293,11 +305,9 @@ Now you can set up the application to use both the authentication plugin we crea
 
 import Vue from "vue";
 import App from "./App.vue";
-
+import vuetify from "./plugins/vuetify";
 import { domain, clientId } from "../auth_config.json";
-
 import { Auth0Plugin } from "./auth";
-
 import { firestorePlugin } from "vuefire";
 
 // Install the authentication plugin here
@@ -306,138 +316,28 @@ Vue.use(Auth0Plugin, {
   clientId
 });
 
-// Install the firestore plugin here
 Vue.use(firestorePlugin);
 
 Vue.config.productionTip = false;
 
 new Vue({
+  vuetify,
   render: h => h(App)
 }).$mount("#app");
 ```
 
-In the above code, the authentication plugin is set up using the Auth0 client id and domain. The Firestore plugin is also imported from the `vuefire` package and set up in the application.
+In the above code, the authentication plugin is set up using the Auth0 client id and domain. The Firestore and `vuetify` plugins are also imported and set up in the application.
 
-## Adding a notifications modal component
-
-Time to start building the application components. First, we need to install [Bootstrap](http://getbootstrap.com/) to help improve the user interface. Run the following command to install `bootstrap`:
-
-```
-npm install bootstrap
-```
-
-To display messages to users of the application, create a messaging modal component by creating the file `modal.vue` in the `components` folder and paste the following code inside:
-
-```javascript
-/* src/components/modal.vue */
-
-<template>
-  <transition name="modal">
-    <div class="modal-mask">
-      <div class="modal-wrapper">
-        <div class="modal-container">
-          <div class="modal-header">{{header}}</div>
-
-          <div class="modal-body">{{content}}</div>
-
-          <div class="modal-footer">
-            <button class="modal-default-button btn btn-primary" @click="$emit('close')">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </transition>
-</template>
-
-<script>
-export default {
-  props: ["header", "content"]
-};
-</script>
-
-<style scoped>
-.modal-mask {
-  position: fixed;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: table;
-  transition: opacity 0.3s ease;
-}
-
-.modal-wrapper {
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.modal-container {
-  width: 600px;
-  margin: 0px auto;
-  padding: 20px 30px;
-  background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-  transition: all 0.3s ease;
-  font-family: Helvetica, Arial, sans-serif;
-}
-
-.modal-header h3 {
-  margin-top: 0;
-  color: #42b983;
-}
-
-.modal-body {
-  margin: 20px 0;
-}
-
-.modal-default-button {
-  float: right;
-}
-
-.modal-enter {
-  opacity: 0;
-}
-
-.modal-leave-active {
-  opacity: 0;
-}
-
-.modal-enter .modal-container,
-.modal-leave-active .modal-container {
-  -webkit-transform: scale(1.1);
-  transform: scale(1.1);
-}
-</style>
-
-```
-
-Good!
-
-The component receives a `title` and `message` as props and pops up when set to display.
-
-## Building the Password Keeper
+## Building the Event Planner
 
 It's finally time to create the user-facing part of the application. The application consists of a single page with the following features:
 
 1. A welcome page for a non-authenticated user
 2. Display the Auth0 Passwordless login for non-authenticated users
-3. A form to save a new account with the password encrypted
-4. A list that displays all saved passwords
-5. A button to decrypt the password and display the credentials of a saved account.
+3. A form to create a new event
+4. A list that displays all events
+5. A button on each event to add tasks to the event.
 6. A button to sign out of the application
-
-As stated earlier, plain text passwords will not be saved to the Firestore database, passwords will be encrypted and then saved to the database.
-
-To perform the encryption, the [Cryptojs](https://www.npmjs.com/package/crypto-js) package will be used. This package uses [AES Encryption](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) to encrypt the password the user enters and then also decrypts the password when the user requests to see it.
-
-Install the `crypto-js` package by running the following command:
-
-```
-npm install crypto-js
-```
 
 All that is needed for the application is now in place. Go into the `App.vue` file and replace everything inside it with the code below:
 
@@ -445,131 +345,229 @@ All that is needed for the application is now in place. Go into the `App.vue` fi
 /* src/App.vue */
 
 <template>
-  <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href="#">
-        Password Keeper
-        <span v-if="$auth.isAuthenticated">( {{ $auth.user.name }} )</span>
-      </a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarText"
-        aria-controls="navbarText"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarText">
-        <div class="navbar-nav mr-auto user-details">
-          <span v-if="$auth.isAuthenticated">({{ $auth.user.email }})</span>
-          <span v-else>&nbsp;</span>
-        </div>
-
-        <span class="navbar-text">
-          <ul class="navbar-nav float-right">
-            <li class="nav-item" v-if="!$auth.isAuthenticated">
-              <a class="nav-link" href="#" @click="login()">Log In</a>
-            </li>
-
-            <li class="nav-item" v-if="$auth.isAuthenticated">
-              <a class="nav-link" href="#" @click="logout()">Log Out</a>
-            </li>
-          </ul>
-        </span>
-      </div>
-    </nav>
-
-    <div v-if="!$auth.isAuthenticated" id="welcomeScreen">
-      <h1>Welcome to Vue Password Keeper</h1>
-      <p>
-        <i>We'll never share your secret with anyone else.</i>
-      </p>
-      <button class="btn btn-primary" @click="login()">Login To Auth0</button>
-    </div>
-    <div v-else id="appScreen" class="container">
-      <div class="row">
-        <div class="col-md-4">
-          <form>
-            <div class="form-group">
-              <label>Enter Account Name</label>
-              <input
-                class="form-control"
-                v-model="passwordForm.account_name"
-                placeholder="E.g My Auth0 Account"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Enter Account ID</label>
-              <input
-                class="form-control"
-                v-model="passwordForm.account_id"
-                placeholder="E.g my@email.com or myusername"
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Enter Password</label>
-              <input class="form-control" type="password" v-model="passwordForm.password" />
-              <small class="form-text text-muted">We'll never share your secret with anyone else.</small>
-            </div>
-
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="savePassword()"
-              :disabled="processing"
-            >{{processing? "Saving...": "Save Password"}}</button>
-          </form>
-        </div>
-        <div class="col-md-6 offset-md-2">
-          <h3>Saved Passwords</h3>
-          <ul class="list-group">
-            <li class="list-group-item" v-for="password in savedpasswords" :key="password.id">
-              {{password.account_name}}
-              <button
-                class="btn btn-success float-right"
-                @click="viewPassword(password)"
-              >View Password</button>
-            </li>
-          </ul>
-        </div>
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <div class="d-flex align-center">
+        <v-toolbar-title
+          >Event Planner
+          <span v-if="$auth.isAuthenticated"
+            >( {{ $auth.user.name }} )</span
+          ></v-toolbar-title
+        >
       </div>
 
-      <!-- Modal -->
+      <v-spacer></v-spacer>
 
-      <modal
-        v-if="modal.show"
-        @close="modal.show = false"
-        :header="modal.header"
-        :content="modal.content"
-      ></modal>
-    </div>
-  </div>
+      <v-btn v-if="!$auth.isAuthenticated" @click="login()" text>
+        Login
+      </v-btn>
+      <v-btn v-else @click="logout()" text>
+        Logout
+      </v-btn>
+    </v-app-bar>
+
+    <v-content>
+      <v-container>
+        <v-row class="text-center" v-if="!$auth.isAuthenticated">
+          <v-col class="mb-4">
+            <h1 class="display-2 font-weight-bold mb-3">
+              Welcome to Vuetify
+            </h1>
+
+            <p class="subheading font-weight-regular">
+              Manage all your personal Events in One convenient location
+            </p>
+
+            <p>
+              <v-btn color="primary" @click="login()">
+                Login with Auth0
+              </v-btn>
+            </p>
+          </v-col>
+        </v-row>
+        <v-row v-else>
+          <v-col cols="6">
+            <h2>Events</h2>
+
+            <div>
+              <v-list two-line>
+                <v-list-item-group v-model="selectedEvent" multiple>
+                  <template v-for="(item, index) in events">
+                    <v-list-item :key="item.event_name">
+                      <template v-slot:default="{ active, toggle }">
+                        <v-list-item-content>
+                          <v-list-item-title
+                            class="blue--text"
+                            v-text="item.event_name"
+                          ></v-list-item-title>
+                          <v-list-item-subtitle
+                            class="text--primary"
+                            v-text="item.description"
+                          ></v-list-item-subtitle>
+                          <v-list-item-subtitle
+                            v-text="`${item.tasks.length} Task(s)`"
+                          ></v-list-item-subtitle>
+                        </v-list-item-content>
+
+                        <v-list-item-action>
+                          <v-list-item-action-text
+                            v-text="item.due_date"
+                          ></v-list-item-action-text>
+
+                          <v-btn
+                            @click="manageTasks(item)"
+                            text
+                            color="primary"
+                            class="mt-1"
+                          >
+                            Manage Tasks
+                          </v-btn>
+                          <!-- <v-icon v-if="!active" color="grey lighten-1">
+                            star_border
+                          </v-icon>
+
+                          <v-icon v-else color="yellow">
+                            star
+                          </v-icon>-->
+                        </v-list-item-action>
+                      </template>
+                    </v-list-item>
+
+                    <v-divider :key="index"></v-divider>
+                  </template>
+                </v-list-item-group>
+              </v-list>
+            </div>
+          </v-col>
+          <v-col cols="4" class="offset-md-1">
+            <h2>Create Event</h2>
+            <v-form ref="form">
+              <v-text-field
+                v-model="eventForm.event_name"
+                label="Event Name"
+                required
+              ></v-text-field>
+
+              <v-text-field
+                v-model="eventForm.description"
+                label="Describe event"
+                required
+              ></v-text-field>
+
+              <v-menu
+                v-model="menu"
+                :close-on-content-click="false"
+                :nudge-right="40"
+                transition="scale-transition"
+                offset-y
+                min-width="290px"
+              >
+                <template v-slot:activator="{ on }">
+                  <v-text-field
+                    v-model="eventForm.due_date"
+                    label="Picker without buttons"
+                    prepend-icon="event"
+                    readonly
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker
+                  v-model="eventForm.due_date"
+                  @input="menu = false"
+                ></v-date-picker>
+              </v-menu>
+
+              <v-btn
+                color="success"
+                class="mr-4"
+                @click="addEvent()"
+                :disabled="processing"
+              >
+                {{ processing ? "Adding..." : "Add Event" }}
+              </v-btn>
+            </v-form>
+          </v-col>
+        </v-row>
+      </v-container>
+
+      <v-dialog v-model="dialog" persistent max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Tasks</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-list>
+                    <template v-for="(task, index) in eventInView.tasks">
+                      <v-list-item :key="task.title">
+                        <v-list-item-content>
+                          <v-list-item-title
+                            v-text="task.title"
+                            :class="{ strike: task.done }"
+                          ></v-list-item-title>
+                        </v-list-item-content>
+
+                        <v-list-item-avatar>
+                          <v-checkbox v-model="task.done"></v-checkbox>
+                        </v-list-item-avatar>
+                      </v-list-item>
+                      <v-divider :key="index"></v-divider>
+                    </template>
+                  </v-list>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    label="Enter Task Name"
+                    required
+                    v-model="newTask"
+                  ></v-text-field>
+                  <p>
+                    <v-btn @click="addNewTask()">
+                      Add Task
+                    </v-btn>
+                  </p>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="dialog = false"
+              >Close</v-btn
+            >
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="saveEvent()"
+              :disabled="updating"
+              >{{ updating ? "Saving..." : "Save Event" }}</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
-import "bootstrap/dist/css/bootstrap.css";
-let CryptoJS = require("crypto-js");
-import db from "./db.js";
-import { passwords_db } from "../firebase_auth.json";
-import modal from "./components/modal";
 
+import db from "./db.js";
+import { events_db } from "../firebase_auth.json";
 export default {
-  name: "app",
+  name: "App",
   data() {
     return {
-      passwordForm: {},
-      savedpasswords: [],
+      eventForm: {},
+      menu: false,
+      events: [],
+      selectedEvent: [],
+      dialog: false,
+      eventInView: {},
+      newTask: null,
       processing: false,
-      modal: {
-        show: false,
-        header: "My header",
-        content: "My Content"
-      },
+      updating: false,
       user: this.$auth.user
     };
   },
@@ -577,13 +575,10 @@ export default {
     let profile = await this.$auth.checkSession();
 
     this.$bind(
-      "savedpasswords",
-      db.collection(passwords_db).where("user", "==", profile.email || "")
+      "events",
+      db.collection(events_db).where("user", "==", profile.email || "")
     );
   },
-
-  components: { modal },
-
   methods: {
     login() {
       this.$auth.login();
@@ -591,79 +586,70 @@ export default {
     logout() {
       this.$auth.logout();
     },
-    async savePassword() {
+    async addEvent() {
       if (
-        this.passwordForm.account_name &&
-        this.passwordForm.account_id &&
-        this.passwordForm.password
+        this.eventForm.event_name &&
+        this.eventForm.description &&
+        this.eventForm.due_date
       ) {
-        let ciphertext = CryptoJS.AES.encrypt(
-          this.passwordForm.password,
-          this.$auth.user.sub
-        );
-
-        let postData = {
-          user: this.$auth.user.email,
-          account_id: this.passwordForm.account_id,
-          account_name: this.passwordForm.account_name,
-          encrypted_password: ciphertext.toString()
-        };
+        this.eventForm.tasks = [];
+        this.eventForm.user = this.$auth.user.email;
 
         this.processing = true;
 
-        await db.collection(passwords_db).add(postData);
+        await db.collection(events_db).add(this.eventForm);
 
         this.processing = false;
 
-        this.showModal(
-          "Success",
-          `Password Successfully added for Account: ${this.passwordForm.account_name}`
-        );
 
         //Clear form
-        this.passwordForm = {};
+        this.eventForm = {};
       } else {
         this.showModal("Error", `All fields are required`);
       }
     },
-    showModal(title, body) {
-      this.modal = {
-        show: true,
-        header: title,
-        content: body
-      };
-    },
-    viewPassword(passwordDetails) {
-      //Decrypt password
-      let bytes = CryptoJS.AES.decrypt(
-        passwordDetails.encrypted_password,
-        this.$auth.user.sub
-      );
-      let plaintextPassword = bytes.toString(CryptoJS.enc.Utf8);
+    manageTasks(event) {
+      this.eventInView = event;
 
-      this.showModal(
-        `Credentials for ${passwordDetails.account_name}`,
-        `Account ID: ${passwordDetails.account_id}, Password: ${plaintextPassword}`
-      );
+      this.dialog = true;
+    },
+    addNewTask() {
+      let taskId;
+
+      if (this.eventInView.tasks.length > 0) {
+        taskId =
+          this.eventInView.tasks[this.eventInView.tasks.length - 1].id + 1;
+      } else {
+        taskId = 1;
+      }
+
+      let newTask = {
+        id: taskId,
+        title: this.newTask,
+        done: false
+      };
+      this.eventInView.tasks.push(newTask);
+      this.newTask = null;
+    },
+    async saveEvent() {
+      this.updating = true;
+      //Update tasks in firestore
+      await db
+        .collection(events_db)
+        .doc(this.eventInView.id)
+        .update({
+          tasks: this.eventInView.tasks
+        });
+
+      this.updating = false;
+      this.dialog = false;
     }
   }
 };
 </script>
-
-<style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-
-  color: #2c3e50;
-}
-
-#welcomeScreen,
-#appScreen {
-  margin-top: 20px;
-}
-
-#welcomeScreen {
-  text-align: center;
+<style scoped>
+.strike {
+  text-decoration: line-through;
 }
 </style>
 
@@ -671,14 +657,11 @@ export default {
 
 Now take a deep breath as we break down the code above starting with the Vuejs instance.
 
-The required libraries, services and files are first imported:
+The required services and files are first imported:
 
 ```javascript
-import "bootstrap/dist/css/bootstrap.css";
-let CryptoJS = require("crypto-js");
 import db from "./db.js";
-import { passwords_db } from "../firebase_auth.json";
-import modal from "./components/modal";
+import { events_db } from "../firebase_auth.json";
 ```
 
 The required application variables are then declared in the `data` parameter of the object.
@@ -687,28 +670,29 @@ The required application variables are then declared in the `data` parameter of 
 
 data() {
   return {
-    passwordForm: {},
-    savedpasswords: [],
+    eventForm: {},
+    menu: false,
+    events: [],
+    selectedEvent: [],
+    dialog: false,
+    eventInView: {},
+    newTask: null,
     processing: false,
-    modal: {
-      show: false,
-      header: "My header",
-      content: "My Content"
-    },
+    updating: false,
     user: this.$auth.user
   };
 }
 ```
 
-Then, in the `created` lifecycle method, the user session is checked, if the session is still active, the user's profile is returned and used to load the saved accounts from the Firestore database and bind it to the `savedpasswords` data variable:
+Then, in the `created` lifecycle method, the user session is checked, if the session is still active, the user's profile is returned and used to load the saved accounts from the Firestore database and bind it to the `events` data variable:
 
 ```javascript
 async created() {
   let profile = await this.$auth.checkSession();
 
   this.$bind(
-    "savedpasswords",
-    db.collection(passwords_db).where("user", "==", profile.email || "")
+    "events",
+    db.collection(events_db).where("user", "==", profile.email || "")
   );
 }
 ```
@@ -717,13 +701,14 @@ Now to the methods in the application:
 
 1. `login`: Calls the `login` method in the authentication service to pop up a new Auth0 Passwordless login window
 2. `logout`: Calls the `logout` method in the authentication service to end the user's session
-3. `savePassword`: Validates the form entry, encrypts the password and saves a new account with the user's email then displays a success message
-4. `showModal`: Displays a popup message using the `modal` component
-5. `viewPassword`: Takes the selected account, decrypts the password and displays the credentials in a modal window
+3. `addEvent`: Validates the form entry, and then adds a new event to our Firestore database
+4. `manageTasks`: Displays the tasks modal to add and check off completed tasks
+5. `addNewTask`: Adds a new task to the selected event
+6. `saveEvent`: Save an event when new tasks have been added or existing tasks have been checked off
 
 In the application template, Vuejs's `v-if` is used to manage the authenticated and non-authenticated interfaces displayed to the user. When a non-authenticated user visits the page, he/she sees a welcome screen and a **Log In** button.
 
-When authenticated, the user sees a form to save new accounts and a list displaying saved accounts with each account having a **View Password** button for the user to view their password and other account details in plain text.
+When authenticated, the user sees a form to create new events and a list displaying saved events with each event having a **Manage Tasks** button for the user to add new tasks or check off completed ones.
 
 ## Running the application
 
@@ -741,20 +726,22 @@ If all instructions have been properly followed you should see the screen below 
 npm install core-js
 ```
 
-![Application Login](images/app-screen-no-auth.png "Application Login - Password Keeper")
+![Application Login](images/app-screen-no-auth.png "Application Login - Event Planner")
 
 The Passwordless login popup prompts the user for an email address. Simply enter your email address and hit **Submit** to get the one-time token in your mail, then enter it in the next screen as shown below:
 
-![Application Login](images/enter-otp.png "Application Login - Password Keeper")
+![Application Login](images/enter-otp.png "Application Login - Event Planner")
 
-Upon successful login, you should see the form. Go ahead and create some stored accounts like below:
+Upon successful login, you should see the form. Go ahead and create some events:
 
-![Application Page](images/app-page.png "Application Page - Password Keeper")
+![Application Page](images/app-page.png "Application Page - Event Planner")
 
-Click on **View Password** on any of the accounts to view your credentials in plain text.
+Click on **Manage Tasks** on any of the events to manage the tasks under that event.
+
+![Application Page](images/manage-tasks.png "Manage Tasks - Event Planner")
 
 ## Conclusion
 
-Having a place to securely store the login credentials of the numerous online accounts you have is a luxury everyone would not mind having. Not having to remember the password to the application that stores these credentials using Passwordless by Auth0 is also a dream come true (at least for me :)).
+Not having to remember the password to an application is a dream that has been made a reality using Passwordless by Auth0. There is so much more you can do with Passwordless so feel free to check the [Auth0 Passwordless home page](https://auth0.com/passwordless) for more information.
 
 I hope you enjoyed this article as much as I did writing it. Happy coding
