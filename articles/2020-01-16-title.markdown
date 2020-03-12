@@ -264,7 +264,7 @@ First, create a file named `firebase_auth.json` at the root of your project and 
 {
   "project_id": "YOUR_FIREBASE_PROJECT_ID",
   "db_url": "https://YOUR_FIREBASE_PROJECT_ID.firebaseio.com/",
-  "passwords_db": "eventsdb"
+  "events_db": "eventsdb"
 }
 ```
 
@@ -394,7 +394,7 @@ All that is needed for the application is now in place. Go into the `App.vue` fi
                 <v-list-item-group v-model="selectedEvent" multiple>
                   <template v-for="(item, index) in events">
                     <v-list-item :key="item.event_name">
-                      <template v-slot:default="{ active, toggle }">
+                      <template>
                         <v-list-item-content>
                           <v-list-item-title
                             class="blue--text"
@@ -422,13 +422,6 @@ All that is needed for the application is now in place. Go into the `App.vue` fi
                           >
                             Manage Tasks
                           </v-btn>
-                          <!-- <v-icon v-if="!active" color="grey lighten-1">
-                            star_border
-                          </v-icon>
-
-                          <v-icon v-else color="yellow">
-                            star
-                          </v-icon>-->
                         </v-list-item-action>
                       </template>
                     </v-list-item>
@@ -552,7 +545,6 @@ All that is needed for the application is now in place. Go into the `App.vue` fi
 </template>
 
 <script>
-
 import db from "./db.js";
 import { events_db } from "../firebase_auth.json";
 export default {
@@ -600,7 +592,6 @@ export default {
         await db.collection(events_db).add(this.eventForm);
 
         this.processing = false;
-
 
         //Clear form
         this.eventForm = {};
@@ -652,6 +643,7 @@ export default {
   text-decoration: line-through;
 }
 </style>
+
 
 ```
 
